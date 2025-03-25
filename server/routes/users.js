@@ -1,7 +1,7 @@
 import express from "express";
 import bcrypt from "bcrypt";
-//import { ObjectId } from "mongodb";
-//import db from "../db/connection.js";
+import { ObjectId } from "mongodb";
+import db from "../db/connection.js";
 
 const router = express.Router();
 
