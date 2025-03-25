@@ -6,17 +6,23 @@ import {
   TouchableOpacity, 
   StyleSheet, 
   Alert,
-  ActivityIndicator
+  ActivityIndicator,
+  Platform
 } from 'react-native';
+import {useRouter} from 'expo-router'
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-export default function Login({ navigation }) {
+export default function Login() {
+  const router = useRouter();
   const [name, setName] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const API_URL = 'http://192.168.56.1:3000';
+  const API_URL = "http://localhost:3000";
 
+
+//to do: use if (Platform.OS === 'web') to change alert behavior, alerts dont show up in browser
+//or just dont use alert in general
   const handleLogin = async () => {
     if (!name || !password) {
       Alert.alert('Error', 'Please fill all fields');
@@ -39,9 +45,9 @@ export default function Login({ navigation }) {
       const data = await response.text();
       
       if (response.ok) {
-        await AsyncStorage.setItem('userToken', 'authenticated');
+        await AsyncStorage.setItem('userAuthToken', 'temp_true');
         await AsyncStorage.setItem('username', name);
-        navigation.replace('Home'); // Use replace instead of navigate to prevent going back
+        router.replace('/(logged-in)'); // Use replace instead of navigate to prevent going back
       } else {
         Alert.alert('Error', data || 'Login failed');
       }
@@ -59,14 +65,16 @@ export default function Login({ navigation }) {
       return;
     }
 
+    setLoading(true);
     try {
-      const response = await fetch(`${API_URL}/users`, {
+      const response = await fetch(`${API_URL}/users/signup`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           name,
+          email,
           password
         }),
       });
@@ -80,12 +88,15 @@ export default function Login({ navigation }) {
     } catch (error) {
       Alert.alert('Error', 'Cannot connect to server');
       console.error(error);
+    } finally {
+        setLoading(false);
     }
   };
 
+
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Budget App Login</Text>
+      <Text style={styles.title}>Centsible</Text>
       
       <TextInput
         placeholder="Username"
