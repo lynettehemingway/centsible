@@ -19,7 +19,17 @@ const getData = async (key) => {
   }
 };
 
+const clearTokens = async () => {
+  try {
+    await AsyncStorage.removeItem("userAuthToken");
+    await AsyncStorage.removeItem("refreshToken");
+  } catch (e) {
+
+  }
+}
+
 export default {
     storeData,
-    getData
+    getData,
+    clearTokens
 }

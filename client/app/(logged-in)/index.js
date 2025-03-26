@@ -1,17 +1,36 @@
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native'
 import React, { useEffect } from 'react'
 import {useRouter} from 'expo-router'
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import {API_URL} from '@env';
+import service from '../../utils/services'
+
+
+
 
 export default function Home() {
   const router = useRouter();
+
   const handleLogout = async () => {
+    const email = await service.getData("email");
+    const refreshToken = await service.getData("refreshToken");
+
     try {
-      await AsyncStorage.clear();
+      await fetch(`${API_URL}/users/logout`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email,
+          refreshToken
+        }),
+      });
+
+      await service.clearTokens();
+
     } catch (e) {
       
     } finally {
-      console.log("cleared data");
       router.replace('/login');
     }
   }

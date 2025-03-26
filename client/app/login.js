@@ -9,22 +9,24 @@ import {
   ActivityIndicator,
   Platform
 } from 'react-native';
-import {useRouter} from 'expo-router'
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import {useRouter} from 'expo-router';
+import {API_URL} from '@env';
+import service from '../utils/services';
+
 
 export default function Login() {
   const router = useRouter();
   const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-
-  const API_URL = "http://localhost:3000";
 
 
 //to do: use if (Platform.OS === 'web') to change alert behavior, alerts dont show up in browser
 //or just dont use alert in general
   const handleLogin = async () => {
-    if (!name || !password) {
+    console.log(`API_URL: ${API_URL}`);
+    if (!email || !password) {
       Alert.alert('Error', 'Please fill all fields');
       return;
     }
@@ -37,17 +39,18 @@ export default function Login() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          name,
+          email,
           password
         }),
       });
 
-      const data = await response.text();
+      const data = await response.json();
       
       if (response.ok) {
-        await AsyncStorage.setItem('userAuthToken', 'temp_true');
-        await AsyncStorage.setItem('username', name);
-        router.replace('/(logged-in)'); // Use replace instead of navigate to prevent going back
+        await service.storeData('userAuthToken', data.userAuthToken);
+        await service.storeData('refreshToken', data.refreshToken);
+        await service.storeData('email', email);
+        router.replace('/(logged-in)');
       } else {
         Alert.alert('Error', data || 'Login failed');
       }
@@ -60,7 +63,7 @@ export default function Login() {
   };
 
   const handleSignup = async () => {
-    if (!name || !password) {
+    if (!email || !password) {
       Alert.alert('Error', 'Please fill all fields');
       return;
     }
@@ -99,9 +102,9 @@ export default function Login() {
       <Text style={styles.title}>Centsible</Text>
       
       <TextInput
-        placeholder="Username"
-        value={name}
-        onChangeText={setName}
+        placeholder="Email"
+        value={email}
+        onChangeText={setEmail}
         style={styles.input}
         autoCapitalize="none"
       />

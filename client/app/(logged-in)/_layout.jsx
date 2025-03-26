@@ -1,6 +1,8 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react';
 import { useRouter, Stack } from 'expo-router';
-import service from '../../utils/services'
+import {API_URL} from '@env';
+import service from '../../utils/services';
+
 
 export default function AuthLayout() {
     const [isAuthenticated, setAuthenticated] = useState(false);
@@ -10,11 +12,22 @@ export default function AuthLayout() {
       }, [])
     
       const checkUserAuth = async() => {
-        const result = await service.getData('userAuthToken');
-        if(result != 'temp_true') {
-          router.replace('/login');
-        }
-        setAuthenticated(true);
+        const userAuthToken = await service.getData('userAuthToken');
+        console.log(userAuthToken);
+        if (!userAuthToken) router.replace('/login');
+
+        const response = await fetch(`${API_URL}/users/`, {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${userAuthToken}`
+          },
+        });
+
+        if (response.status === 401)
+
+
+        if (response.ok) setAuthenticated(true);
+        else router.replace('/login');
       }
 
     if (!isAuthenticated) return <></>;
