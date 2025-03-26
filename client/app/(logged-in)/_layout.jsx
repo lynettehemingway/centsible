@@ -23,7 +23,6 @@ export default function AuthLayout() {
           },
         });
 
-        if (response.status === 401)
 
 
         if (response.ok) setAuthenticated(true);

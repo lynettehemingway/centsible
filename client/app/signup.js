@@ -14,8 +14,9 @@ import {API_URL} from '@env';
 import service from '../utils/services';
 
 
-export default function Login() {
+export default function Signup() {
   const router = useRouter();
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -23,46 +24,43 @@ export default function Login() {
 
 //to do: use if (Platform.OS === 'web') to change alert behavior, alerts dont show up in browser
 //or just dont use alert in general
-  const handleLogin = async () => {
-    console.log(`API_URL: ${API_URL}`);
-    if (!email || !password) {
-      Alert.alert('Error', 'Please fill all fields');
-      return;
-    }
-
-    setLoading(true);
-    try {
-      const response = await fetch(`${API_URL}/users/login`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          email,
-          password
-        }),
-      });
-
-      const data = await response.json();
-      
-      if (response.ok) {
-        await service.storeData('userAuthToken', data.userAuthToken);
-        await service.storeData('refreshToken', data.refreshToken);
-        await service.storeData('email', email);
-        router.replace('/(logged-in)');
-      } else {
-        Alert.alert('Error', data || 'Login failed');
+  const handleSignup = async () => {
+    if (!email || !name || !password) {
+        Alert.alert('Error', 'Please fill all fields');
+        return;
       }
-    } catch (error) {
-      Alert.alert('Connection Error', 'Cannot reach the server. Check your network.');
-      console.error(error);
-    } finally {
-      setLoading(false);
-    }
+  
+      setLoading(true);
+      try {
+        const response = await fetch(`${API_URL}/users/signup`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            name,
+            email,
+            password
+          }),
+        });
+  
+        if (response.ok) {
+          Alert.alert('Success', 'Account created! Please login');
+          router.replace('/login');
+        } else {
+          const error = await response.text();
+          Alert.alert('Error', error || 'Account creation failed');
+        }
+      } catch (error) {
+        Alert.alert('Error', 'Cannot connect to server');
+        console.error(error);
+      } finally {
+          setLoading(false);
+      }
   };
 
-  const navigateSignup = async () => {
-    router.replace('/signup');
+  const navigateLogin = async () => {
+    router.replace('/login');
   };
 
 
@@ -70,6 +68,14 @@ export default function Login() {
     <View style={styles.container}>
       <Text style={styles.title}>Centsible</Text>
       
+      <TextInput
+        placeholder="Username"
+        value={name}
+        onChangeText={setName}
+        style={styles.input}
+        autoCapitalize="none"
+      />
+
       <TextInput
         placeholder="Email"
         value={email}
@@ -88,22 +94,22 @@ export default function Login() {
       
       <TouchableOpacity 
         style={[styles.button, loading && styles.disabledButton]} 
-        onPress={handleLogin}
+        onPress={handleSignup}
         disabled={loading}
       >
         {loading ? (
           <ActivityIndicator color="#fff" />
         ) : (
-          <Text style={styles.buttonText}>Login</Text>
+          <Text style={styles.buttonText}>Sign Up</Text>
         )}
       </TouchableOpacity>
       
       <TouchableOpacity 
         style={styles.secondaryButton} 
-        onPress={navigateSignup}
+        onPress={navigateLogin}
         disabled={loading}
       >
-        <Text style={styles.secondaryButtonText}>Create Account</Text>
+        <Text style={styles.secondaryButtonText}>Log In</Text>
       </TouchableOpacity>
     </View>
   );
