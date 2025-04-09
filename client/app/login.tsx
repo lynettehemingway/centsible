@@ -10,11 +10,11 @@ import {
   Platform
 } from 'react-native';
 import {useRouter} from 'expo-router';
-import {API_URL} from '@env';
 import service from '../utils/services';
 
 
 export default function Login() {
+  const API_URL = process.env.EXPO_PUBLIC_API_URL;
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');

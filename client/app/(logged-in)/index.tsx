@@ -1,13 +1,13 @@
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native'
 import React, { useEffect } from 'react'
 import {useRouter} from 'expo-router'
-import {API_URL} from '@env';
 import service from '../../utils/services'
 
 
 
 
 export default function Home() {
+  const API_URL = process.env.EXPO_PUBLIC_API_URL;
   const router = useRouter();
 
   const handleLogout = async () => {
@@ -45,7 +45,7 @@ export default function Home() {
       <TouchableOpacity 
               style={styles.button} 
               onPress={handleLogout}
-            ><Text style={styles.ButtonText}>Log Out</Text></TouchableOpacity>
+            ><Text style={styles.buttonText}>Log Out</Text></TouchableOpacity>
     </View>
   )
 }
