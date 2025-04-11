@@ -28,7 +28,26 @@ export default function Index() {
 
 
         if (response.ok) setAuthenticated('auth');
-        else setAuthenticated('noauth');
+        else {
+            const userRefreshToken  = await service.getData('refreshToken');
+            if (!userAuthToken) setAuthenticated('noauth');
+            else {
+                const response = await fetch(`${API_URL}/users/refresh`, {
+                    method: 'GET',
+                    headers: {
+                    'Authorization': `Bearer ${userRefreshToken}`
+                    },
+                });
+
+                if (response.ok){
+                    const data = await response.json();
+
+                    await service.storeData('userAuthToken', data.userAuthToken);
+                    setAuthenticated('auth');
+                }
+                else setAuthenticated('noauth');
+            }
+        }
         }
         catch (err) {
             setAuthenticated('noauth');
