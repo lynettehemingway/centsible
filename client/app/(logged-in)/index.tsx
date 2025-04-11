@@ -35,6 +35,20 @@ export default function Home() {
     }
   }
 
+  const addExpense = async () => {
+    //takes user to a new page:
+    //defaults to current date user can then change date
+    //then user can select which category their expense falls into among the given category options
+    //then they can enter the amount of their expense
+  }
+
+  const createBudget = async () => {
+    //takes user to a new page:
+    //presents user with a view of all 12 months
+    //there is a button to add categories so they can make different categories the expense falls into
+    //then they can go into each month and allocate the amount
+  }
+
 
   return (
     <View style={styles.container}>
@@ -46,6 +60,17 @@ export default function Home() {
               style={styles.button} 
               onPress={handleLogout}
             ><Text style={styles.buttonText}>Log Out</Text></TouchableOpacity>
+
+      <TouchableOpacity 
+              style={styles.button} 
+              onPress={addExpense}
+            ><Text style={styles.buttonText}>Add Expense</Text></TouchableOpacity>
+
+      <TouchableOpacity 
+              style={styles.button} 
+              onPress={createBudget}
+            ><Text style={styles.buttonText}>Create Budget</Text></TouchableOpacity>
+
     </View>
   )
 }
