@@ -35,7 +35,6 @@ export default function Index() {
           },
         });
         if (response.ok) setAuthenticated('auth');
-<<<<<<< HEAD
         else setAuthenticated('noauth');
       } catch (error) {
         console.error(error);
@@ -44,33 +43,6 @@ export default function Index() {
     };
     checkUserAuth();
   }, []);
-=======
-        else {
-            const userRefreshToken  = await service.getData('refreshToken');
-            if (!userAuthToken) setAuthenticated('noauth');
-            else {
-                const response = await fetch(`${API_URL}/users/refresh`, {
-                    method: 'GET',
-                    headers: {
-                    'Authorization': `Bearer ${userRefreshToken}`
-                    },
-                });
-
-                if (response.ok){
-                    const data = await response.json();
-
-                    await service.storeData('userAuthToken', data.userAuthToken);
-                    setAuthenticated('auth');
-                }
-                else setAuthenticated('noauth');
-            }
-        }
-        }
-        catch (err) {
-            setAuthenticated('noauth');
-        }
-        }
->>>>>>> 671b79692e4653ccc20b924c1724f25a14e09926
 
   // While checking authentication, show a loading indicator.
   if (isAuthenticated === 'check') {
