@@ -19,6 +19,11 @@ export default function Index() {
   const router = useRouter();
   const [isAuthenticated, setAuthenticated] = useState<'check' | 'auth' | 'noauth'>('check');
 
+  // Function to navigate to the index page.
+  const navigateIndex = () => {
+    router.replace('/');
+  };
+
   useEffect(() => {
     const checkUserAuth = async () => {
       const userAuthToken = await service.getData('userAuthToken');
@@ -64,22 +69,26 @@ export default function Index() {
       <ScrollView contentContainerStyle={styles.landingContainer}>
         {/* Navbar divided into three sections */}
         <View style={styles.navBar}>
-          {/* Left: Dots & Brand Text */}
+          {/* Left: Dots & Brand Text wrapped in TouchableOpacity */}
           <View style={styles.navLeft}>
             <View style={styles.dotContainer}>
               <View style={[styles.dot, { backgroundColor: 'black' }]} />
               <View style={[styles.dot, { backgroundColor: 'black' }]} />
               <View style={[styles.dot, { backgroundColor: 'black' }]} />
             </View>
-            <Text style={styles.brandText}>Centsible</Text>
+            <TouchableOpacity onPress={navigateIndex}>
+              <Text style={styles.brandText}>Centsible</Text>
+            </TouchableOpacity>
           </View>
-          {/* Center: Logo */}
+          {/* Center: Logo wrapped in TouchableOpacity */}
           <View style={styles.logoContainer}>
-            <Image 
-              source={require('../assets/images/logo.png')} 
-              style={styles.logo} 
-              resizeMode="contain" 
-            />
+            <TouchableOpacity onPress={navigateIndex}>
+              <Image 
+                source={require('../assets/images/logo.png')} 
+                style={styles.logo} 
+                resizeMode="contain" 
+              />
+            </TouchableOpacity>
           </View>
           {/* Right: Navigation Buttons */}
           <View style={styles.navRight}>
@@ -136,11 +145,11 @@ const styles = StyleSheet.create({
   navBar: {
     width: '100%',
     height: 70,
-    backgroundColor: '#71c193',
+    backgroundColor: 'rgba(113,193,147, 0.9)',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 10,  // Extra horizontal padding for space.
+    paddingHorizontal: 10,
     borderWidth: 3.5,
     borderLeftWidth: 0, 
     borderRightWidth: 0,
@@ -168,7 +177,7 @@ const styles = StyleSheet.create({
   brandText: {
     fontSize: 26,
     fontWeight: 'bold',
-    marginLeft: 15,  // Extra space between dots and text.
+    marginLeft: 15,
     color: '#000',
   },
   // Center section: logo container (centers the logo).
