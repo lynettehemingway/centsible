@@ -92,6 +92,9 @@ export default function Index() {
           </View>
           {/* Right: Navigation Buttons */}
           <View style={styles.navRight}>
+            <TouchableOpacity style={styles.navButton} onPress={() => router.push('/')}>
+              <Text style={styles.navButtonText}>Home</Text>
+            </TouchableOpacity>
             <TouchableOpacity style={styles.navButton} onPress={() => router.push('/login')}>
               <Text style={styles.navButtonText}>Log In</Text>
             </TouchableOpacity>

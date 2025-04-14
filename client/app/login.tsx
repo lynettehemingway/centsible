@@ -100,6 +100,9 @@ export default function Login() {
           </View>
           {/* Right: Navigation Buttons */}
           <View style={styles.navRight}>
+          <TouchableOpacity style={styles.navButton} onPress={() => router.push('/')}>
+              <Text style={styles.navButtonText}>Home</Text>
+            </TouchableOpacity>
             <TouchableOpacity style={styles.navButton} onPress={() => router.push('/login')}>
               <Text style={styles.navButtonText}>Log In</Text>
             </TouchableOpacity>
@@ -118,7 +121,7 @@ export default function Login() {
         {/* Main content container for the login box */}
         <View style={styles.contentContainer}>
           <View style={styles.loginBox}>
-            <Text style={styles.title}>Centsible</Text>
+            <Text style={styles.title}>Welcome Back to Centsible!</Text>
             <TextInput
               placeholder="Email"
               value={email}
@@ -238,11 +241,11 @@ const styles = StyleSheet.create({
   },
   loginBox: {
     width: '35%',
-    height: 350,
+    height: 370,
     backgroundColor: 'rgba(255, 255, 255, 0.7)',
     borderRadius: 20,
     padding: 20,
-    marginRight: 50,
+    marginRight: 60,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
