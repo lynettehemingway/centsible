@@ -103,7 +103,7 @@ export default function Index() {
             </TouchableOpacity>
             <TouchableOpacity
               style={styles.iconButton}
-              onPress={() => Linking.openURL('https://github.com/your-repo')}
+              onPress={() => Linking.openURL('https://github.com/lynettehemingway/centsible')}
             >
               <FontAwesome name="github" size={24} color="#000" />
             </TouchableOpacity>
