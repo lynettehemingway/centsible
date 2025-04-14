@@ -145,7 +145,7 @@ const styles = StyleSheet.create({
   navBar: {
     width: '100%',
     height: 70,
-    backgroundColor: '#71c193',
+    backgroundColor: 'rgba(113,193,147, 0.9)',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
