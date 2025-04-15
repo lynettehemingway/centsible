@@ -28,7 +28,7 @@ const clearTokens = async () => {
   }
 }
 
-//Might be incorrect
+//Needed for add expense page
 const addExpense = async (expenseData) => {
   console.log('Received expense data:', expenseData);
   // Simulate an API call or store logic
