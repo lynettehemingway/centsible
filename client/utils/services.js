@@ -28,8 +28,17 @@ const clearTokens = async () => {
   }
 }
 
+//Might be incorrect
+const addExpense = async (expenseData) => {
+  console.log('Received expense data:', expenseData);
+  // Simulate an API call or store logic
+  return new Promise((resolve) => setTimeout(resolve, 500));
+};
+//
+
 export default {
     storeData,
     getData,
-    clearTokens
+    clearTokens,
+    addExpense
 }

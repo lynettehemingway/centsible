@@ -3,9 +3,6 @@ import React, { useEffect } from 'react'
 import {useRouter} from 'expo-router'
 import service from '../../utils/services'
 
-
-
-
 export default function Home() {
   const API_URL = process.env.EXPO_PUBLIC_API_URL;
   const router = useRouter();
@@ -40,6 +37,7 @@ export default function Home() {
     //defaults to current date user can then change date
     //then user can select which category their expense falls into among the given category options
     //then they can enter the amount of their expense
+    router.push('/(logged-in)/addexpense');
   }
 
   const createBudget = async () => {
