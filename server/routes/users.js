@@ -12,16 +12,17 @@ const router = express.Router();
 
 router.post('/login', async (req, res) => {
   let collection = await db.collection("users");
-  let user = await collection.findOne({email: req.body.email}, {email: 1, _id: 0});
+  let user = await collection.findOne({email: req.body.email});
   if (!user) return res.status(401).send('Invalid Credentials');
 
   try {
     if (await bcrypt.compare(req.body.password, user.password)) {
-      const userAuthToken = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {expiresIn: '30m'});
-      const refreshToken = jwt.sign(user, process.env.REFRESH_TOKEN_SECRET, {expiresIn: '7d'});
+      const payload = {email: user.email};
+      const userAuthToken = jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET, {expiresIn: '30m'});
+      const refreshToken = jwt.sign(payload, process.env.REFRESH_TOKEN_SECRET, {expiresIn: '7d'});
 
-      const tokens = await collection.findOne({email: req.body.email}, {refreshTokens: 1, _id: 0});
-      if (tokens.length >= 5) collection.updateOne({email: req.body.email}, {$pull: {refreshTokens: tokens[0]}});
+      const tokens = await collection.findOne({email: req.body.email});
+      if (tokens.refreshTokens >= 5) collection.updateOne({email: req.body.email}, {$pull: {refreshTokens: tokens[0]}});
       await collection.updateOne({email: req.body.email}, {$push: {refreshTokens: refreshToken}});
 
 
@@ -59,7 +60,7 @@ router.get('/refresh', async (req, res) => {
 
   const refreshToken = req.body.refreshToken;
   if (refreshToken == null) return res.status(401).send();
-  if (await collection.findOne({refreshTokens: refreshToken, email: req.body.email})) return res.status(403).send();
+  if (!await collection.findOne({refreshTokens: refreshToken, email: req.body.email})) return res.status(403).send();
 
   jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET, (err, user) => {
     if (err) {
@@ -83,19 +84,26 @@ router.delete('/logout', async (req, res) => {
 
 
 
-router.get('/', async (req, res) => {
-  const authHeader = req.headers['authorization'];
-  const token = authHeader && authHeader.split(' ')[1];
-  if (token == null) return res.status(403).send();
-  
-  jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, user) => {
-
-    if (err) return res.status(401).send();
-
-    req.user = user;
-  })
-  res.status(200).send(); //todo: send stuff needed to display on homepage
+router.get('/', authenticateToken, async (req, res) => {
+  res.status(200).send({ user: req.user });
 });
 
 
+
+router.get('/addexpense', authenticateToken, async (req, res) => {
+  res.status(200).send({ user: req.user });
+});
+
+
+function authenticateToken(req, res, next) {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
+  if (!token) return res.sendStatus(401);
+
+  jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, user) => {
+    if (err) return res.sendStatus(403);
+    req.user = user;
+    next();
+  });
+}
 export default router;
