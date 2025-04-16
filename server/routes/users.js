@@ -8,6 +8,14 @@ import db from "../db/connection.js";
 dotenv.config({ path: ".env.local" });
 const router = express.Router();
 
+const defaultCategories = [
+  'Food',
+  'Transport',
+  'Entertainment',
+  'Utilities',
+  'Other',
+];
+
 
 
 router.post('/login', async (req, res) => {
@@ -45,7 +53,7 @@ router.post('/signup', async (req, res) => {
   try {
     const salt = await bcrypt.genSalt();
     const hashedPassword = await bcrypt.hash(req.body.password, salt);
-    const user = { name: req.body.name, email: req.body.email, password: hashedPassword };
+    const user = { name: req.body.name, email: req.body.email, password: hashedPassword, categories: defaultCategories};
     collection.insertOne(user);
     res.status(201).send('Account Created');
   } catch {
@@ -90,8 +98,10 @@ router.get('/', authenticateToken, async (req, res) => {
 
 
 
-router.get('/addexpense', authenticateToken, async (req, res) => {
-  res.status(200).send({ user: req.user });
+router.post('/addexpense', authenticateToken, async (req, res) => {
+  let collection = await db.collection("users");
+  await collection.updateOne({email: req.user.email}, {$push: {expenses: req.body}});
+  res.status(200).send();
 });
 
 

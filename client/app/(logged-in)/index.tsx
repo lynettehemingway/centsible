@@ -23,20 +23,16 @@ export default function Home() {
         }),
       });
 
-      await service.clearTokens();
 
     } catch (e) {
       
     } finally {
+      await service.clearTokens();
       router.replace('/login');
     }
   }
 
   const addExpense = async () => {
-    //takes user to a new page:
-    //defaults to current date user can then change date
-    //then user can select which category their expense falls into among the given category options
-    //then they can enter the amount of their expense
     router.push('/(logged-in)/addexpense');
   }
 

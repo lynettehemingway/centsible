@@ -27,11 +27,13 @@ export default function Index() {
   useEffect(() => {
     const checkUserAuth = async () => {
       const userAuthToken = await service.getData('userAuthToken');
-      console.log('User Token:', userAuthToken);
-      if (!userAuthToken) {
+      const cachedEmail = await service.getData('email');
+
+      if (!userAuthToken || !cachedEmail) {
         setAuthenticated('noauth');
         return;
       }
+
       try {
         const response = await fetch(`${API_URL}/users/`, {
           method: 'GET',
@@ -39,7 +41,11 @@ export default function Index() {
             'Authorization': `Bearer ${userAuthToken}`,
           },
         });
-        if (response.ok) setAuthenticated('auth');
+
+        const data = await response.json();
+        const serverEmail = data.user?.email;
+
+        if (response.ok && cachedEmail === serverEmail) setAuthenticated('auth');
         else setAuthenticated('noauth');
       } catch (error) {
         console.error(error);

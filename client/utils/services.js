@@ -23,6 +23,7 @@ const clearTokens = async () => {
   try {
     await AsyncStorage.removeItem("userAuthToken");
     await AsyncStorage.removeItem("refreshToken");
+    await AsyncStorage.removeItem("email");
   } catch (e) {
 
   }
@@ -31,10 +32,13 @@ const clearTokens = async () => {
 //Needed for add expense page
 const addExpense = async (expenseData) => {
   console.log('Received expense data:', expenseData);
-  // Simulate an API call or store logic
+  
+
+
   return new Promise((resolve) => setTimeout(resolve, 500));
 };
-//
+
+
 
 export default {
     storeData,
