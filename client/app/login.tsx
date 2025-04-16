@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { 
   TextInput, 
   TouchableOpacity, 
@@ -24,6 +24,7 @@ export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const passwordRef = useRef<TextInput | null>(null);
 
   const handleLogin = async () => {
     console.log(`API_URL: ${API_URL}`);
@@ -128,6 +129,8 @@ export default function Login() {
               onChangeText={setEmail}
               style={styles.input}
               autoCapitalize="none"
+              returnKeyType="next"  
+              onSubmitEditing={() => passwordRef.current && passwordRef.current.focus()}
             />
             <TextInput
               placeholder="Password"
@@ -135,6 +138,10 @@ export default function Login() {
               onChangeText={setPassword}
               secureTextEntry
               style={styles.input}
+              ref={passwordRef}
+              returnKeyType="done"
+              onSubmitEditing={handleLogin}
+              blurOnSubmit={true}  
             />
             <TouchableOpacity 
               style={[styles.button, loading && styles.disabledButton]} 

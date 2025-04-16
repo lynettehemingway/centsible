@@ -41,6 +41,7 @@ export default function Home() {
     //presents user with a view of all 12 months
     //there is a button to add categories so they can make different categories the expense falls into
     //then they can go into each month and allocate the amount
+    router.push('/(logged-in)/createbudget');
   }
 
 
