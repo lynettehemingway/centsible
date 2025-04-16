@@ -46,7 +46,8 @@
     "react-native-screens": "~4.4.0",
     "react-native-ui-datepicker": "^3.1.2",
     "react-native-web": "~0.19.13",
-    "react-native-webview": "13.12.5"
+    "react-native-webview": "13.12.5",
+    "victory-native": "^41.16.2"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",

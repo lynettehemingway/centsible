@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -13,20 +13,13 @@ import { Picker } from '@react-native-picker/picker';
 import { useRouter } from 'expo-router';
 import service from '../../utils/services';
 
-const categories = [
-  'Food',
-  'Transport',
-  'Entertainment',
-  'Utilities',
-  'Other',
-];
-
 export default function AddExpense() {
   const router = useRouter();
   const defaultStyles = useDefaultStyles();
   const [date, setDate] = useState<DateType>(new Date());
   const [showPicker, setShowPicker] = useState(false);
-  const [category, setCategory] = useState(categories[0]);
+  const [categories, setCategories] = useState<string[]>([]);
+  const [category, setCategory] = useState('');
   const [amount, setAmount] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -41,7 +34,7 @@ export default function AddExpense() {
 
     try {
       const response = await fetch(
-        `${process.env.EXPO_PUBLIC_API_URL}/expenses`,
+        `${process.env.EXPO_PUBLIC_API_URL}/users/addexpense`,
         {
           method: 'POST',
           headers: {
@@ -69,6 +62,24 @@ export default function AddExpense() {
       setLoading(false);
     }
   };
+
+  const loadCategories = async () => {
+    try {
+        const storedCategories = await service.getData('categories');
+        if (storedCategories) {
+            const parsed = JSON.parse(storedCategories);
+            setCategories(parsed);
+            setCategory(parsed[0]);
+        }
+    } catch (error) {
+        console.error('Failed to load categories');
+        router.back();
+    }
+  }
+
+  useEffect(() => {
+    loadCategories();
+  }, []);
 
   return (
     <View style={styles.container}>
