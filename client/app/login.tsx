@@ -25,6 +25,7 @@ export default function Login() {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const passwordRef = useRef<TextInput | null>(null);
+  const [loginError, setLoginError] = useState(false);
 
   const handleLogin = async () => {
     console.log(`API_URL: ${API_URL}`);
@@ -50,11 +51,14 @@ export default function Login() {
         await service.storeData('refreshToken', data.refreshToken);
         await service.storeData('email', email);
         router.replace('/(logged-in)');
+        //setLoginError('');
       } else {
-        Alert.alert('Error', data || 'Login failed');
+        setLoginError(true);
+        //Alert.alert('Error', data || 'Login failed');
       }
     } catch (error) {
       Alert.alert('Connection Error', 'Cannot reach the server. Check your network.');
+      setLoginError(true);
       console.error(error);
     } finally {
       setLoading(false);
@@ -143,6 +147,10 @@ export default function Login() {
               onSubmitEditing={handleLogin}
               blurOnSubmit={true}  
             />
+            {}
+            {loginError ? (
+              <Text style={styles.errorText}>Login failed. Invalid Username or Password.</Text>
+            ) : null}
             <TouchableOpacity 
               style={[styles.button, loading && styles.disabledButton]} 
               onPress={handleLogin}
@@ -171,6 +179,12 @@ export default function Login() {
 const styles = StyleSheet.create({
   background: {
     flex: 1,
+  },
+  errorText: {
+    color: 'red',
+    fontSize: 12,
+    marginBottom: 10,
+    textAlign: 'center',
   },
   outerContainer: {
     flex: 1,
