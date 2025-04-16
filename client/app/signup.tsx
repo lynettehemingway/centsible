@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { 
   View, 
   Text, 
@@ -23,6 +23,9 @@ export default function Signup() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+
+  const emailInputRef = useRef<TextInput | null>(null);
+  const passwordInputRef = useRef<TextInput | null>(null);
 
   // Navigation functions
   const navigateIndex = () => {
@@ -120,6 +123,12 @@ export default function Signup() {
               onChangeText={setName}
               style={styles.input}
               autoCapitalize="none"
+              returnKeyType="next"
+              onSubmitEditing={() => {
+                if (emailInputRef.current) {
+                  emailInputRef.current.focus();
+                }
+              }}
             />
             <TextInput
               placeholder="Email"
@@ -127,13 +136,22 @@ export default function Signup() {
               onChangeText={setEmail}
               style={styles.input}
               autoCapitalize="none"
+              returnKeyType="next"
+              onSubmitEditing={() => {
+                if (passwordInputRef.current) {
+                  passwordInputRef.current.focus();
+                }
+              }}
             />
             <TextInput
+              ref={passwordInputRef}
               placeholder="Password"
               value={password}
               onChangeText={setPassword}
               secureTextEntry
               style={styles.input}
+              returnKeyType="done"
+              onSubmitEditing={handleSignup}
             />
             <TouchableOpacity 
               style={[styles.button, loading && styles.disabledButton]} 
