@@ -1,15 +1,18 @@
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native'
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import {useRouter} from 'expo-router'
-import service from '../../utils/services'
+import { useUserAuth } from '@/hooks/useUserAuth'
+import { getEmail, getRefreshToken } from '@/utils/userAuthStorage'
 
 export default function Home() {
   const API_URL = process.env.EXPO_PUBLIC_API_URL;
   const router = useRouter();
 
+  const { logout } = useUserAuth();
+
   const handleLogout = async () => {
-    const email = await service.getData("email");
-    const refreshToken = await service.getData("refreshToken");
+    const email = await getEmail();
+    const refreshToken = await getRefreshToken();
 
     try {
       await fetch(`${API_URL}/users/logout`, {
@@ -22,13 +25,10 @@ export default function Home() {
           refreshToken
         }),
       });
-
-
     } catch (e) {
       
     } finally {
-      await service.clearTokens();
-      router.replace('/login');
+      await logout();
     }
   }
 
@@ -43,7 +43,6 @@ export default function Home() {
     //then they can go into each month and allocate the amount
     router.push('/(logged-in)/createbudget');
   }
-
 
   return (
     <View style={styles.container}>

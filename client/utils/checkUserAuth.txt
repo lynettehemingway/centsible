@@ -1,0 +1,25 @@
+// temporary
+
+const API_URL = process.env.EXPO_PUBLIC_API_URL;
+  const checkUserAuth = async () => {
+    const userAuthToken = await tokens.getAuthToken();
+    const email = await tokens.getEmail();
+
+    if (!userAuthToken || !email) setAuthenticated('noauth');
+    else try {
+      const response = await fetch(`${API_URL}/users/`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${userAuthToken}`,
+        },
+      });
+
+      const data = await response.json();
+      const serverEmail = data.user.email;
+
+      if (response.ok && email === serverEmail) setAuthenticated('auth');
+      else setAuthenticated('noauth');
+    } catch (e) {
+      setAuthenticated('noauth');
+    }
+  };

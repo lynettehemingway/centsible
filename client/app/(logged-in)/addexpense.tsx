@@ -11,7 +11,6 @@ import {
 import DateTimePicker, { DateType, useDefaultStyles } from 'react-native-ui-datepicker';
 import { Picker } from '@react-native-picker/picker';
 import { useRouter } from 'expo-router';
-import service from '../../utils/services';
 
 export default function AddExpense() {
   const router = useRouter();
@@ -23,63 +22,63 @@ export default function AddExpense() {
   const [amount, setAmount] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = async () => {
-    if (!amount) {
-      Alert.alert('Error', 'Please enter an amount.');
-      return;
-    }
+  // const handleSubmit = async () => {
+  //   if (!amount) {
+  //     Alert.alert('Error', 'Please enter an amount.');
+  //     return;
+  //   }
 
-    setLoading(true);
-    const token = await service.getData('userAuthToken');
+  //   setLoading(true);
+  //   const token = await service.getData('userAuthToken');
 
-    try {
-      const response = await fetch(
-        `${process.env.EXPO_PUBLIC_API_URL}/users/addexpense`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({
-            date: date?.toLocaleString(),
-            category,
-            amount: parseFloat(amount),
-          }),
-        }
-      );
+  //   try {
+  //     const response = await fetch(
+  //       `${process.env.EXPO_PUBLIC_API_URL}/users/addexpense`,
+  //       {
+  //         method: 'POST',
+  //         headers: {
+  //           'Content-Type': 'application/json',
+  //           Authorization: `Bearer ${token}`,
+  //         },
+  //         body: JSON.stringify({
+  //           date: date?.toLocaleString(),
+  //           category,
+  //           amount: parseFloat(amount),
+  //         }),
+  //       }
+  //     );
 
-      if (!response.ok) {
-        throw new Error('Failed to save expense');
-      }
+  //     if (!response.ok) {
+  //       throw new Error('Failed to save expense');
+  //     }
 
-      // go back to dashboard or previous screen
-      router.back();
-    } catch (e) {
-      console.error(e);
-      Alert.alert('Error', 'Failed to add expense.');
-    } finally {
-      setLoading(false);
-    }
-  };
+  //     // go back to dashboard or previous screen
+  //     router.back();
+  //   } catch (e) {
+  //     console.error(e);
+  //     Alert.alert('Error', 'Failed to add expense.');
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
 
-  const loadCategories = async () => {
-    try {
-        const storedCategories = await service.getData('categories');
-        if (storedCategories) {
-            const parsed = JSON.parse(storedCategories);
-            setCategories(parsed);
-            setCategory(parsed[0]);
-        }
-    } catch (error) {
-        console.error('Failed to load categories');
-        router.back();
-    }
-  }
+  // const loadCategories = async () => {
+  //   try {
+  //       const storedCategories = await service.getData('categories');
+  //       if (storedCategories) {
+  //           const parsed = JSON.parse(storedCategories);
+  //           setCategories(parsed);
+  //           setCategory(parsed[0]);
+  //       }
+  //   } catch (error) {
+  //       console.error('Failed to load categories');
+  //       router.back();
+  //   }
+  // }
 
-  useEffect(() => {
-    loadCategories();
-  }, []);
+  // useEffect(() => {
+  //   loadCategories();
+  // }, []);
 
   return (
     <View style={styles.container}>
@@ -135,7 +134,7 @@ export default function AddExpense() {
 
       <TouchableOpacity
         style={[styles.button, loading && styles.disabledButton]}
-        onPress={handleSubmit}
+        //onPress={handleSubmit}
         disabled={loading}
       >
         <Text style={styles.buttonText}>

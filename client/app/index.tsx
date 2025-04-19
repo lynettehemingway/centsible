@@ -6,71 +6,44 @@ import {
   View,
   Text,
   Image,
-  ActivityIndicator,
   TouchableOpacity,
   StyleSheet,
   Linking,
+  ActivityIndicator,
 } from 'react-native';
+import { useUserAuth } from '@/hooks/useUserAuth';
 import { FontAwesome } from '@expo/vector-icons';
-import service from '../utils/services';
 
 export default function Index() {
-  const API_URL = process.env.EXPO_PUBLIC_API_URL;
   const router = useRouter();
-  const [isAuthenticated, setAuthenticated] = useState<'check' | 'auth' | 'noauth'>('check');
+  const { isAuthenticated } = useUserAuth();
 
-  // Function to navigate to the index page.
+  
   const navigateIndex = () => {
     router.replace('/');
   };
 
-  useEffect(() => {
-    const checkUserAuth = async () => {
-      const userAuthToken = await service.getData('userAuthToken');
-      const cachedEmail = await service.getData('email');
+  const navigateLogin = () => {
+    router.replace('/login');
+  };
 
-      if (!userAuthToken || !cachedEmail) {
-        setAuthenticated('noauth');
-        return;
-      }
+  const navigateSignup = () => {
+    router.replace('/signup');
+  }
 
-      try {
-        const response = await fetch(`${API_URL}/users/`, {
-          method: 'GET',
-          headers: {
-            'Authorization': `Bearer ${userAuthToken}`,
-          },
-        });
 
-        const data = await response.json();
-        const serverEmail = data.user?.email;
 
-        if (response.ok && cachedEmail === serverEmail) setAuthenticated('auth');
-        else setAuthenticated('noauth');
-      } catch (error) {
-        console.error(error);
-        setAuthenticated('noauth');
-      }
-    };
-    checkUserAuth();
-  }, []);
-
-  // While checking authentication, show a loading indicator.
-  if (isAuthenticated === 'check') {
+  if (isAuthenticated === null) {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color="#0000ff" />
       </View>
     );
   }
-
-  // If authenticated, redirect to the logged-in route.
-  if (isAuthenticated === 'auth') {
+  else if (isAuthenticated === true) {
     return <Redirect href="/(logged-in)" />;
   }
-
-  // When not authenticated, render the landing page.
-  return (
+  else return (
     <SafeAreaView style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.landingContainer}>
         {/* Navbar divided into three sections */}
@@ -98,13 +71,13 @@ export default function Index() {
           </View>
           {/* Right: Navigation Buttons */}
           <View style={styles.navRight}>
-            <TouchableOpacity style={styles.navButton} onPress={() => router.push('/')}>
+            <TouchableOpacity style={styles.navButton} onPress={navigateIndex}>
               <Text style={styles.navButtonText}>Home</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.navButton} onPress={() => router.push('/login')}>
+            <TouchableOpacity style={styles.navButton} onPress={navigateLogin}>
               <Text style={styles.navButtonText}>Log In</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.navButton} onPress={() => router.push('/signup')}>
+            <TouchableOpacity style={styles.navButton} onPress={navigateSignup}>
               <Text style={styles.navButtonText}>Sign Up</Text>
             </TouchableOpacity>
             <TouchableOpacity
@@ -140,15 +113,15 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#f5f5f5',
   },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
   landingContainer: {
     flexGrow: 1,
     backgroundColor: '#f5f5f5',
     paddingBottom: 20,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   // Navbar with a pixelated look and thicker borders
   navBar: {

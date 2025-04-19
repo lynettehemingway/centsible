@@ -10,24 +10,30 @@ import {
   SafeAreaView,
   ScrollView,
   Image,
-  Linking
+  Linking,
+  Platform
 } from 'react-native';
-import { Redirect, useRouter } from 'expo-router';
+import { useRouter, Redirect } from 'expo-router';
+import { useUserAuth } from '@/hooks/useUserAuth';
 import { FontAwesome } from '@expo/vector-icons';
-import service from '../utils/services';
 
 export default function Signup() {
   const API_URL = process.env.EXPO_PUBLIC_API_URL;
   const router = useRouter();
+  
+  const { login, isAuthenticated } = useUserAuth();
+
+  const [loading, setLoading] = useState(false);
+  const [signupError, setSignupError] = useState<string | null>(null);
+  
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false);
 
   const emailInputRef = useRef<TextInput | null>(null);
   const passwordInputRef = useRef<TextInput | null>(null);
 
-  // Navigation functions
+
   const navigateIndex = () => {
     router.replace('/');
   };
@@ -37,11 +43,14 @@ export default function Signup() {
   };
 
   const handleSignup = async () => {
-    if (!email || !name || !password) {
-      Alert.alert('Error', 'Please fill all fields');
+    if (!name || !email || !password) {
+      Alert.alert('Error', 'Please enter all fields.');
+      setSignupError('Please enter all fields.');
       return;
     }
   
+    //TO-DO: add email verification, use setSignupError('Please enter a valid email.') when invalid email
+
     setLoading(true);
     try {
       const response = await fetch(`${API_URL}/users/signup`, {
@@ -53,21 +62,33 @@ export default function Signup() {
       });
   
       if (response.ok) {
-        Alert.alert('Success', 'Account created! Please login');
-        router.replace('/login');
+        const {userAuthToken, refreshToken} = await response.json();
+        await login(email, userAuthToken, refreshToken);
       } else {
         const error = await response.text();
-        Alert.alert('Error', error || 'Account creation failed');
+        setSignupError(error || 'Account creation failed.')
+        Alert.alert('Error', error || 'Account creation failed.');
       }
-    } catch (error) {
-      Alert.alert('Error', 'Cannot connect to server');
-      console.error(error);
+    } catch (e) {
+      setSignupError('Server error. Please try again later.');
+      Alert.alert('Error', 'Server error. Please try again later.');
     } finally {
       setLoading(false);
     }
   };
 
-  return (
+
+  if (isAuthenticated === null) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#0000ff" />
+      </View>
+    );
+  }
+  else if (isAuthenticated === true) {
+    return <Redirect href="/(logged-in)" />;
+  }
+  else return (
     <SafeAreaView style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.landingContainer}>
         {/* Navbar divided into three sections */}
@@ -153,6 +174,9 @@ export default function Signup() {
               returnKeyType="done"
               onSubmitEditing={handleSignup}
             />
+            {signupError && Platform.OS === 'web'? (
+              <Text style={styles.errorText}>{signupError}</Text>
+            ) : null}
             <TouchableOpacity 
               style={[styles.button, loading && styles.disabledButton]} 
               onPress={handleSignup}
@@ -182,6 +206,17 @@ const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
     backgroundColor: '#f5f5f5',
+  },
+  errorText: {
+    color: 'red',
+    fontSize: 12,
+    marginBottom: 10,
+    textAlign: 'center',
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   landingContainer: {
     flexGrow: 1,

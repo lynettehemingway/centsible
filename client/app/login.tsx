@@ -7,32 +7,37 @@ import {
   ActivityIndicator,
   Platform,
   SafeAreaView,
-  ScrollView,
   View,
   Text,
   Image,
   Linking,
-  ImageBackground
+  ImageBackground,
 } from 'react-native';
-import { Redirect, useRouter } from 'expo-router';
+import { useRouter, Redirect } from 'expo-router';
 import { FontAwesome } from '@expo/vector-icons';
-import service from '../utils/services';
+import { useUserAuth } from '@/hooks/useUserAuth';
 
 export default function Login() {
   const API_URL = process.env.EXPO_PUBLIC_API_URL;
   const router = useRouter();
+
+  const { login, isAuthenticated } = useUserAuth();
+
+  const [loading, setLoading] = useState(false);
+  const [loginError, setLoginError] = useState<string | null>(null);
+
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false);
+
   const passwordRef = useRef<TextInput | null>(null);
-  const [loginError, setLoginError] = useState(false);
 
   const handleLogin = async () => {
-    console.log(`API_URL: ${API_URL}`);
     if (!email || !password) {
-      Alert.alert('Error', 'Please fill all fields');
+      setLoginError('Please enter all fields.');
+      Alert.alert('Error', 'Please enter all fields.');
       return;
     }
+
     setLoading(true);
     try {
       const response = await fetch(`${API_URL}/users/login`, {
@@ -45,21 +50,17 @@ export default function Login() {
           password,
         }),
       });
-      const data = await response.json();
+
       if (response.ok) {
-        await service.storeData('userAuthToken', data.userAuthToken);
-        await service.storeData('refreshToken', data.refreshToken);
-        await service.storeData('email', email);
-        router.replace('/(logged-in)');
-        //setLoginError('');
+        const {userAuthToken, refreshToken} = await response.json();
+        await login(email, userAuthToken, refreshToken);
       } else {
-        setLoginError(true);
-        //Alert.alert('Error', data || 'Login failed');
+        setLoginError('Invalid username or password.');
+        Alert.alert('Error', 'Invalid username or password.');
       }
     } catch (error) {
-      Alert.alert('Connection Error', 'Cannot reach the server. Check your network.');
-      setLoginError(true);
-      console.error(error);
+      setLoginError('Server error. Please try again later.');
+      Alert.alert('Error', 'Server error. Please try again later.');
     } finally {
       setLoading(false);
     }
@@ -73,7 +74,19 @@ export default function Login() {
     router.replace('/');
   };
 
-  return (
+
+
+ if (isAuthenticated === null) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#0000ff" />
+      </View>
+    );
+  }
+  else if (isAuthenticated === true) {
+    return <Redirect href="/(logged-in)" />;
+  }
+  else return (
     <ImageBackground 
       source={require('../assets/images/banner.png')} 
       style={styles.background} 
@@ -145,11 +158,10 @@ export default function Login() {
               ref={passwordRef}
               returnKeyType="done"
               onSubmitEditing={handleLogin}
-              blurOnSubmit={true}  
+              submitBehavior='blurAndSubmit'
             />
-            {}
-            {loginError ? (
-              <Text style={styles.errorText}>Login failed. Invalid Username or Password.</Text>
+            {loginError && Platform.OS === 'web'? (
+              <Text style={styles.errorText}>{loginError}</Text>
             ) : null}
             <TouchableOpacity 
               style={[styles.button, loading && styles.disabledButton]} 
@@ -179,6 +191,11 @@ export default function Login() {
 const styles = StyleSheet.create({
   background: {
     flex: 1,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   errorText: {
     color: 'red',
