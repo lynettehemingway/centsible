@@ -88,7 +88,7 @@ export default function Login() {
   }
   else return (
     <ImageBackground 
-      source={require('../assets/images/banner.png')} 
+      source={require('../assets/images/login.gif')} 
       style={styles.background} 
       resizeMode="cover"
     >
@@ -191,6 +191,11 @@ export default function Login() {
 const styles = StyleSheet.create({
   background: {
     flex: 1,
+    width: '100%',
+    height: '100%',
+  },
+  backgroundImage: {
+    resizeMode: 'contain', 
   },
   loadingContainer: {
     flex: 1,
