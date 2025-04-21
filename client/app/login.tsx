@@ -88,7 +88,7 @@ export default function Login() {
   }
   else return (
     <ImageBackground 
-      source={require('../assets/images/login.gif')} 
+      source={require('../assets/images/login0.gif')} 
       style={styles.background} 
       resizeMode="cover"
     >
