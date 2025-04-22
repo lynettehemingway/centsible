@@ -162,6 +162,9 @@ const styles = StyleSheet.create({
   linkText: {
     color: '#fff',
     fontSize: 16,
+    textShadowColor: 'rgba(0,0,0,0.5)',
+    textShadowOffset: { width: 1.2, height: 1 },
+    textShadowRadius: 1,
     marginLeft: 10,
   },
   divider: {
