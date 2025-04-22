@@ -11,6 +11,11 @@ import {
 import DateTimePicker, { DateType, useDefaultStyles } from 'react-native-ui-datepicker';
 import { Picker } from '@react-native-picker/picker';
 import { useRouter } from 'expo-router';
+import Sidebar from '@/components/Sidebar';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useUserAuth } from '@/hooks/useUserAuth';
+
+
 
 export default function AddExpense() {
   const router = useRouter();
@@ -21,6 +26,29 @@ export default function AddExpense() {
   const [category, setCategory] = useState('');
   const [amount, setAmount] = useState('');
   const [loading, setLoading] = useState(false);
+  
+  const API_URL = process.env.EXPO_PUBLIC_API_URL;
+  const { logout } = useUserAuth();
+
+  const handleLogout = async () => {
+    setLoading(true);
+    try {
+      const email = await AsyncStorage.getItem('email');
+      const refreshToken = await AsyncStorage.getItem('refreshToken');
+      await fetch(`${API_URL}/users/logout`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, refreshToken }),
+      });
+    } catch (e) {
+      console.warn('Logout error', e);
+    } finally {
+      await AsyncStorage.multiRemove(['userAuthToken', 'refreshToken', 'email', 'name']);
+      await logout();
+      setLoading(false);
+    }
+  };
+
 
   // const handleSubmit = async () => {
   //   if (!amount) {
@@ -82,75 +110,84 @@ export default function AddExpense() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.label}>Date</Text>
-      <TouchableOpacity
-        style={styles.input}
-        onPress={() => setShowPicker(true)}
-      >
-        <Text>{date?.toString()}</Text>
-      </TouchableOpacity>
-      {showPicker && (
-        <DateTimePicker
-          date={date}
-          mode="single"
-          styles={{
-            ...defaultStyles,
-            header: {color: 'black'},
-            days: {color: 'black'},
-            day_label: {color: 'black'},
-            month_selector_label: {color: 'black'},
-            year_selector_label: {color: 'black'},
-            selected_month: {color: 'black'},
-            today: { backgroundColor: '#ddd' },
-            today_label: { color: 'black'},
-            selected: { backgroundColor: 'rgba(113,193,147, 0.9)' },
-            button_next: {backgroundColor: '#ddd'},
-            button_prev: {backgroundColor: '#ddd'}
-          }}
-          onChange={({ date }) =>  setDate(date)}
-        />
-      )}
-
-      <Text style={styles.label}>Category</Text>
-      <View style={styles.pickerContainer}>
-        <Picker
-          selectedValue={category}
-          onValueChange={(val) => setCategory(val)}
+      <Sidebar loading={loading} handleLogout={handleLogout} />
+      <View style={styles.formArea}>
+        <Text style={styles.label}>Date</Text>
+        <TouchableOpacity
+          style={styles.input}
+          onPress={() => setShowPicker(true)}
         >
-          {categories.map((c) => (
-            <Picker.Item key={c} label={c} value={c} />
-          ))}
-        </Picker>
+          <Text>{date?.toString()}</Text>
+        </TouchableOpacity>
+  
+        {showPicker && (
+          <DateTimePicker
+            date={date}
+            mode="single"
+            styles={{
+              ...defaultStyles,
+              header: { color: 'black' },
+              days: { color: 'black' },
+              day_label: { color: 'black' },
+              month_selector_label: { color: 'black' },
+              year_selector_label: { color: 'black' },
+              selected_month: { color: 'black' },
+              today: { backgroundColor: '#ddd' },
+              today_label: { color: 'black' },
+              selected: { backgroundColor: 'rgba(113,193,147, 0.9)' },
+              button_next: { backgroundColor: '#ddd' },
+              button_prev: { backgroundColor: '#ddd' },
+            }}
+            onChange={({ date }) => setDate(date)}
+          />
+        )}
+  
+        <Text style={styles.label}>Category</Text>
+        <View style={styles.pickerContainer}>
+          <Picker
+            selectedValue={category}
+            onValueChange={(val) => setCategory(val)}
+          >
+            {categories.map((c) => (
+              <Picker.Item key={c} label={c} value={c} />
+            ))}
+          </Picker>
+        </View>
+  
+        <Text style={styles.label}>Amount</Text>
+        <TextInput
+          style={styles.input}
+          placeholder="0.00"
+          keyboardType="decimal-pad"
+          value={amount}
+          onChangeText={setAmount}
+        />
+  
+        <TouchableOpacity
+          style={[styles.button, loading && styles.disabledButton]}
+          disabled={loading}
+        >
+          <Text style={styles.buttonText}>
+            {loading ? 'Saving...' : 'Save Expense'}
+          </Text>
+        </TouchableOpacity>
       </View>
-
-      <Text style={styles.label}>Amount</Text>
-      <TextInput
-        style={styles.input}
-        placeholder="0.00"
-        keyboardType="decimal-pad"
-        value={amount}
-        onChangeText={setAmount}
-      />
-
-      <TouchableOpacity
-        style={[styles.button, loading && styles.disabledButton]}
-        //onPress={handleSubmit}
-        disabled={loading}
-      >
-        <Text style={styles.buttonText}>
-          {loading ? 'Saving...' : 'Save Expense'}
-        </Text>
-      </TouchableOpacity>
     </View>
   );
+  
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
+    flexDirection: 'row', // horizontal layout
     backgroundColor: '#f5f5f5',
   },
+  formArea: {
+    flex: 1,
+    padding: 20,
+  },
+  
   label: {
     marginTop: 12,
     marginBottom: 4,

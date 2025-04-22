@@ -12,6 +12,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
 import { FontAwesome } from '@expo/vector-icons';
 import { useUserAuth } from '@/hooks/useUserAuth';
+import Sidebar from '@/components/Sidebar';
+
 
 export default function Home() {
   const API_URL = process.env.EXPO_PUBLIC_API_URL;
@@ -58,45 +60,7 @@ export default function Home() {
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
-        {/* Sidebar */}
-        <View style={styles.sidebar}>
-          <View style={styles.brandContainer}>
-            <Image
-              source={require('../../assets/images/logo.png')}
-              style={styles.sidebarLogo}
-              resizeMode="contain"
-            />
-            <Text style={styles.brand}>Centsible</Text>
-          </View>
-
-          <TouchableOpacity style={styles.link} onPress={navigate('/')}>
-            <FontAwesome name="home" size={20} color="#fff" />
-            <Text style={styles.linkText}>Home</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity style={styles.link} onPress={navigate('/(logged-in)/addexpense')}>
-            <FontAwesome name="plus-circle" size={20} color="#fff" />
-            <Text style={styles.linkText}>Add Expense</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity style={styles.link} onPress={navigate('/(logged-in)/createbudget')}>
-            <FontAwesome name="pie-chart" size={20} color="#fff" />
-            <Text style={styles.linkText}>Create Budget</Text>
-          </TouchableOpacity>
-
-          <View style={styles.divider} />
-
-          <TouchableOpacity style={styles.link} onPress={handleLogout}>
-            {loading ? (
-              <ActivityIndicator color="#fff" />
-            ) : (
-              <>
-                <FontAwesome name="sign-out" size={20} color="#fff" />
-                <Text style={styles.linkText}>Log Out</Text>
-              </>
-            )}
-          </TouchableOpacity>
-        </View>
+        <Sidebar loading={loading} handleLogout={handleLogout} />
 
         {/* Main Content */}
         <View style={styles.main}>
