@@ -46,14 +46,14 @@ export default function Login() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          email,
+          email: email.toLowerCase(),
           password,
         }),
       });
 
       if (response.ok) {
         const {userAuthToken, refreshToken} = await response.json();
-        await login(email, userAuthToken, refreshToken);
+        await login(email.toLowerCase(), userAuthToken, refreshToken);
       } else {
         setLoginError('Invalid email or password.');
         Alert.alert('Error', 'Invalid email or password.');
