@@ -6,7 +6,7 @@ import {
   TouchableOpacity,
   SafeAreaView,
   ActivityIndicator,
-  Image,        
+  Image,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
@@ -60,7 +60,6 @@ export default function Home() {
       <View style={styles.container}>
         {/* Sidebar */}
         <View style={styles.sidebar}>
-          {/* Brand with logo + text */}
           <View style={styles.brandContainer}>
             <Image
               source={require('../../assets/images/logo.png')}
@@ -101,23 +100,49 @@ export default function Home() {
 
         {/* Main Content */}
         <View style={styles.main}>
-          <Text style={styles.welcome}>
-            Welcome back, {name || 'User'}!
-          </Text>
-          <View style={styles.actions}>
+          <Text style={styles.welcome}>Welcome back, {name || 'User'}!</Text>
+
+          {/* Widget Grid */}
+          <View style={styles.widgetsContainer}>
+            {/* Expenses Summary Widget */}
             <TouchableOpacity
-              style={styles.button}
+              style={styles.widgetBox}
               onPress={navigate('/(logged-in)/addexpense')}
             >
-              <Text style={styles.buttonText}>+ Add Expense</Text>
+              <View style={styles.widgetHeader}>
+                <Text style={styles.widgetTitle}>Expenses Summary</Text>
+                <FontAwesome name="bar-chart" size={20} color="#4a90e2" />
+              </View>
+              {/* Placeholder for chart / data */}
+              <View style={styles.widgetContent}>
+                <Text style={styles.placeholderText}>[Monthly chart here]</Text>
+              </View>
             </TouchableOpacity>
+
+            {/* Budget Overview Widget */}
             <TouchableOpacity
-              style={styles.button}
+              style={styles.widgetBox}
               onPress={navigate('/(logged-in)/createbudget')}
             >
-              <Text style={styles.buttonText}>📊 Create Budget</Text>
+              <View style={styles.widgetHeader}>
+                <Text style={styles.widgetTitle}>Budget Overview</Text>
+                <FontAwesome name="pie-chart" size={20} color="#4a90e2" />
+              </View>
+              <View style={styles.widgetContent}>
+                <Text style={styles.placeholderText}>[Budget breakdown]</Text>
+              </View>
             </TouchableOpacity>
           </View>
+
+          <View style={styles.progressContainer}>
+            <Text style={styles.progressTitle}>Your Progress</Text>
+            <Image
+              source={require('../../assets/images/banner.png')}
+              style={styles.progressImage}
+              resizeMode="contain"
+            />
+          </View>
+          
         </View>
       </View>
     </SafeAreaView>
@@ -128,6 +153,7 @@ const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: '#f5f5f5' },
   container: { flex: 1, flexDirection: 'row' },
 
+  /* Sidebar */
   sidebar: {
     width: 200,
     backgroundColor: '#71c193',
@@ -135,20 +161,16 @@ const styles = StyleSheet.create({
     paddingLeft: 20,
     paddingHorizontal: 10,
   },
-
-  // new container for logo + brand text
   brandContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 30,
-    paddingLeft: 5,
   },
   sidebarLogo: {
     width: 32,
     height: 32,
     marginRight: 8,
   },
-
   brand: {
     color: '#fff',
     fontSize: 24,
@@ -162,10 +184,10 @@ const styles = StyleSheet.create({
   linkText: {
     color: '#fff',
     fontSize: 16,
+    marginLeft: 10,
     textShadowColor: 'rgba(0,0,0,0.5)',
     textShadowOffset: { width: 1.2, height: 1 },
     textShadowRadius: 1,
-    marginLeft: 10,
   },
   divider: {
     height: 1,
@@ -173,6 +195,7 @@ const styles = StyleSheet.create({
     marginVertical: 20,
   },
 
+  /* Main Content */
   main: {
     flex: 1,
     padding: 30,
@@ -182,11 +205,53 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     marginBottom: 20,
     color: '#333',
+    marginLeft: 20,
+    marginTop: 30,
   },
-  actions: {
+
+  /* Widget grid container */
+  widgetsContainer: {
     flexDirection: 'row',
-    marginTop: 20,
+    justifyContent: 'space-between',
   },
+
+  /* Individual widget box */
+  widgetBox: {
+    width: '48%',
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    padding: 16,
+    margin: 20,
+    // shadow for iOS
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    // elevation for Android
+    elevation: 3,
+  },
+  widgetHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  widgetTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#333',
+  },
+  widgetContent: {
+    height: 80,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  placeholderText: {
+    color: '#aaa',
+    fontStyle: 'italic',
+  },
+
+  /* Button placeholders */
   button: {
     backgroundColor: '#4a90e2',
     paddingVertical: 14,
@@ -199,4 +264,34 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
   },
+
+    /* Progress area below widgets */
+    progressContainer: {
+      marginTop: 20,
+      alignSelf: 'center',
+      backgroundColor: '#fff',
+      borderRadius: 12,
+      padding: 16,
+      width: '50%',
+      height: '40%',
+      // shadow (iOS)
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.1,
+      shadowRadius: 4,
+      // elevation (Android)
+      elevation: 3,
+      alignItems: 'center',
+    },
+    progressTitle: {
+      fontSize: 18,
+      fontWeight: '600',
+      color: '#333',
+      marginBottom: 12,
+    },
+    progressImage: {
+      width: '100%',
+      height: 150,
+    },
+  
 });
