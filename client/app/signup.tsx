@@ -139,7 +139,7 @@ export default function Signup() {
           <View style={styles.signupBox}>
             <Text style={styles.title}>Create Your Account to Start Saving!</Text>
             <TextInput
-              placeholder="Username"
+              placeholder="Name"
               value={name}
               onChangeText={setName}
               style={styles.input}

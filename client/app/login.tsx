@@ -55,8 +55,8 @@ export default function Login() {
         const {userAuthToken, refreshToken} = await response.json();
         await login(email, userAuthToken, refreshToken);
       } else {
-        setLoginError('Invalid username or password.');
-        Alert.alert('Error', 'Invalid username or password.');
+        setLoginError('Invalid email or password.');
+        Alert.alert('Error', 'Invalid email or password.');
       }
     } catch (error) {
       setLoginError('Server error. Please try again later.');
