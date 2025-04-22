@@ -212,7 +212,9 @@ const styles = StyleSheet.create({
   /* Widget grid container */
   widgetsContainer: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     justifyContent: 'space-between',
+    paddingHorizontal: 20,
   },
 
   /* Individual widget box */
@@ -221,14 +223,13 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     borderRadius: 12,
     padding: 16,
-    margin: 20,
+    marginBottom: 20, // space below each box
     // shadow for iOS
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
-    // elevation for Android
-    elevation: 3,
+    elevation: 3, // Android
   },
   widgetHeader: {
     flexDirection: 'row',
