@@ -16,6 +16,7 @@ import { authFetch } from '@/utils/authFetch';
 import Sidebar from '@/components/Sidebar';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useUserAuth } from '@/hooks/useUserAuth';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 
 
@@ -90,7 +91,7 @@ export default function AddExpense() {
       );
 
       if (response.ok) {
-        router.back();
+        router.replace('/(logged-in)');
       }
       else{
         setAddError('Unable to add expense.')
@@ -123,83 +124,97 @@ export default function AddExpense() {
   // }, []);
 
   return (
-    <View style={styles.container}>
-      <Sidebar loading={loading} handleLogout={handleLogout} />
-      <View style={styles.formArea}>
-      <Text style={styles.label}>Date</Text>
-      <TouchableOpacity
-        style={styles.input}
-        onPress={() => setShowPicker(!showPicker)}
-      >
-        <Text>{dayjs(date).format('MMM D, YYYY (h:mm A)')}</Text>
-      </TouchableOpacity>
-      {showPicker && (
-        <DateTimePicker
-        date={date}
-        mode="single"
-        timePicker
-        use12Hours
-        style={styles.input}
-        styles={{
-          today: { borderWidth: 1, borderColor: '#ddd' , borderRadius: 8 },
-          selected: { backgroundColor: 'rgba(113,193,147, 0.9)', borderRadius: 8 },
-          button_next: {backgroundColor: '#ddd'},
-          button_prev: {backgroundColor: '#ddd'},
-        }}
-        onChange={({ date }) =>  setDate(date)}
-      />
-      )}
+    <SafeAreaView style={styles.safeArea}>
+      <View style={styles.container}>
+        <Sidebar loading={loading} handleLogout={handleLogout} />
+        <View style={styles.main}>
+          <Text style={styles.header}>Add Expense</Text>
+          <View style={styles.formGroup}>
+            <Text style={styles.label}>Date</Text>
+            <View style={{zIndex: 1}}>
+              <TouchableOpacity
+                style={styles.input}
+                onPress={() => setShowPicker(!showPicker)}
+              >
+                <Text>{dayjs(date).format('MMM D, YYYY (h:mm A)')}</Text>
+                
+              </TouchableOpacity>
+              {showPicker && (
+                <DateTimePicker
+                date={date}
+                mode="single"
+                timePicker
+                use12Hours
+                style={styles.calendarOverlay}
+                styles={{
+                  today: { borderWidth: 1, borderColor: '#ddd' , borderRadius: 8 },
+                  selected: { backgroundColor: 'rgba(113,193,147, 0.9)', borderRadius: 8 },
+                  button_next: {backgroundColor: '#ddd'},
+                  button_prev: {backgroundColor: '#ddd'},
+                }}
+                onChange={({ date }) =>  setDate(date)}
+              />
+              )}
+            </View>
+            <Text style={styles.label}>Category</Text>
+            <View style={styles.pickerContainer}>
+              <Picker
+                selectedValue={category}
+                onValueChange={(val) => setCategory(val)}
+                style={styles.input}
+              >
+                {categories.map((c) => (
+                  <Picker.Item key={c} label={c} value={c} />
+                ))}
+              </Picker>
+            </View>
 
-      <Text style={styles.label}>Category</Text>
-      <View style={styles.pickerContainer}>
-        <Picker
-          selectedValue={category}
-          onValueChange={(val) => setCategory(val)}
-          style={styles.input}
-        >
-          {categories.map((c) => (
-            <Picker.Item key={c} label={c} value={c} />
-          ))}
-        </Picker>
+            <Text style={styles.label}>Amount</Text>
+            <TextInput
+              placeholder="0.00"
+              value={amount}
+              keyboardType="decimal-pad"
+              inputMode="decimal"
+              onChangeText={setAmount}
+              onBlur={handleNumBlur}
+              style={styles.input}
+            />
+            {addError && Platform.OS === 'web'? (
+              <Text style={styles.errorText}>{addError}</Text>
+            ) : null}
+
+            <TouchableOpacity
+              style={[styles.button, loading && styles.disabledButton]}
+              onPress={handleSubmit}
+              disabled={loading}
+            >
+              <Text style={styles.buttonText}>
+                {loading ? 'Saving...' : 'Save Expense'}
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
       </View>
-
-      <Text style={styles.label}>Amount</Text>
-      <TextInput
-        placeholder="0.00"
-        value={amount}
-        keyboardType="decimal-pad"
-        inputMode="decimal"
-        onChangeText={setAmount}
-        onBlur={handleNumBlur}
-        style={styles.input}
-      />
-      {addError && Platform.OS === 'web'? (
-        <Text style={styles.errorText}>{addError}</Text>
-      ) : null}
-
-      <TouchableOpacity
-        style={[styles.button, loading && styles.disabledButton]}
-        //onPress={handleSubmit}
-        disabled={loading}
-      >
-        <Text style={styles.buttonText}>
-          {loading ? 'Saving...' : 'Save Expense'}
-        </Text>
-      </TouchableOpacity>
-      </View>
-    </View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 20,
-    backgroundColor: '#f5f5f5',
-  },
+  safeArea: { flex: 1, backgroundColor: '#f5f5f5' },
+  container: { flex: 1, flexDirection: 'row' },
+  main: { flex: 1, padding: 30 },
   formArea: {
     flex: 1,
     padding: 20,
+  },
+  header: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 20,
+    color: '#333',
+  },
+  formGroup: {
+    gap: 14,
   },
   label: {
     marginTop: 12,
@@ -240,4 +255,16 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     textAlign: 'center',
   },
+  calendarOverlay: {
+    backgroundColor: '#fff',
+    padding: 12,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#ddd',
+    position: 'absolute',
+    width: '50%',
+    height: 'auto',
+    top: '100%',
+    left: '0%',
+  }
 });
