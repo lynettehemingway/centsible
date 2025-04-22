@@ -65,9 +65,8 @@ export default function Signup() {
         const {userAuthToken, refreshToken} = await response.json();
         await login(email, userAuthToken, refreshToken);
       } else {
-        const error = await response.text();
-        setSignupError(error || 'Account creation failed.')
-        Alert.alert('Error', error || 'Account creation failed.');
+        setSignupError('Account creation failed.')
+        Alert.alert('Error', 'Account creation failed.');
       }
     } catch (e) {
       setSignupError('Server error. Please try again later.');

@@ -8,59 +8,73 @@ import {
   Platform,
   Alert,
 } from 'react-native';
-import DateTimePicker, { DateType, useDefaultStyles } from 'react-native-ui-datepicker';
+import DateTimePicker, { DateType } from 'react-native-ui-datepicker';
+import dayjs from 'dayjs';
 import { Picker } from '@react-native-picker/picker';
 import { useRouter } from 'expo-router';
+import { authFetch } from '@/utils/authFetch';
 
 export default function AddExpense() {
   const router = useRouter();
-  const defaultStyles = useDefaultStyles();
+  
   const [date, setDate] = useState<DateType>(new Date());
   const [showPicker, setShowPicker] = useState(false);
   const [categories, setCategories] = useState<string[]>([]);
-  const [category, setCategory] = useState('');
-  const [amount, setAmount] = useState('');
+  const [category, setCategory] = useState('test');
+  const [amount, setAmount] = useState('0.00');
+
   const [loading, setLoading] = useState(false);
+  const [addError, setAddError] = useState<string | null>(null);
 
-  // const handleSubmit = async () => {
-  //   if (!amount) {
-  //     Alert.alert('Error', 'Please enter an amount.');
-  //     return;
-  //   }
+  const handleNumBlur = () => {
+    const num = parseFloat(amount.replace(/[^0-9.]/g, ''));
+    if (isNaN(num)) setAmount('0.00');
+    else setAmount(num.toFixed(2));
+  }
 
-  //   setLoading(true);
-  //   const token = await service.getData('userAuthToken');
+  const handleSubmit = async () => {
+    const formattedDate = date ? dayjs(date).toDate() : null;
+    if (!amount || !formattedDate) {
+      Alert.alert('Error', 'Please enter an amount.');
+      setAddError('Please enter an amount.');
+      return;
+    }
 
-  //   try {
-  //     const response = await fetch(
-  //       `${process.env.EXPO_PUBLIC_API_URL}/users/addexpense`,
-  //       {
-  //         method: 'POST',
-  //         headers: {
-  //           'Content-Type': 'application/json',
-  //           Authorization: `Bearer ${token}`,
-  //         },
-  //         body: JSON.stringify({
-  //           date: date?.toLocaleString(),
-  //           category,
-  //           amount: parseFloat(amount),
-  //         }),
-  //       }
-  //     );
+    setLoading(true);
 
-  //     if (!response.ok) {
-  //       throw new Error('Failed to save expense');
-  //     }
+    const expense = {
+      date: formattedDate.toISOString(),
+      category: category,
+      amount: amount
+    };
+    
 
-  //     // go back to dashboard or previous screen
-  //     router.back();
-  //   } catch (e) {
-  //     console.error(e);
-  //     Alert.alert('Error', 'Failed to add expense.');
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
+    try {
+      const response = await authFetch(
+        `${process.env.EXPO_PUBLIC_API_URL}/users/data/addexpense`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(expense),
+        }
+      );
+
+      if (response.ok) {
+        router.back();
+      }
+      else{
+        setAddError('Unable to add expense.')
+        Alert.alert('Error', 'Unable to add expense.');
+      }
+    } catch (e) {
+      setAddError('Server error. Please try again later.');
+      Alert.alert('Error', 'Server error. Please try again later.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // const loadCategories = async () => {
   //   try {
@@ -85,56 +99,55 @@ export default function AddExpense() {
       <Text style={styles.label}>Date</Text>
       <TouchableOpacity
         style={styles.input}
-        onPress={() => setShowPicker(true)}
+        onPress={() => setShowPicker(!showPicker)}
       >
-        <Text>{date?.toString()}</Text>
+        <Text>{dayjs(date).format('MMM D, YYYY (h:mm A)')}</Text>
       </TouchableOpacity>
       {showPicker && (
         <DateTimePicker
           date={date}
           mode="single"
+          timePicker
+          use12Hours
+          style={styles.input}
           styles={{
-            ...defaultStyles,
-            header: {color: 'black'},
-            days: {color: 'black'},
-            day_label: {color: 'black'},
-            month_selector_label: {color: 'black'},
-            year_selector_label: {color: 'black'},
-            selected_month: {color: 'black'},
-            today: { backgroundColor: '#ddd' },
-            today_label: { color: 'black'},
-            selected: { backgroundColor: 'rgba(113,193,147, 0.9)' },
+            today: { borderWidth: 1, borderColor: '#ddd' , borderRadius: 8 },
+            selected: { backgroundColor: 'rgba(113,193,147, 0.9)', borderRadius: 8 },
             button_next: {backgroundColor: '#ddd'},
-            button_prev: {backgroundColor: '#ddd'}
+            button_prev: {backgroundColor: '#ddd'},
           }}
           onChange={({ date }) =>  setDate(date)}
         />
       )}
 
       <Text style={styles.label}>Category</Text>
-      <View style={styles.pickerContainer}>
-        <Picker
-          selectedValue={category}
-          onValueChange={(val) => setCategory(val)}
-        >
-          {categories.map((c) => (
-            <Picker.Item key={c} label={c} value={c} />
-          ))}
-        </Picker>
-      </View>
+      <Picker
+        selectedValue={category}
+        onValueChange={(val) => setCategory(val)}
+        style={styles.input}
+      >
+        {categories.map((c) => (
+          <Picker.Item key={c} label={c} value={c} style={styles.input}/>
+        ))}
+      </Picker>
 
       <Text style={styles.label}>Amount</Text>
       <TextInput
-        style={styles.input}
         placeholder="0.00"
-        keyboardType="decimal-pad"
         value={amount}
+        keyboardType="decimal-pad"
+        inputMode="decimal"
         onChangeText={setAmount}
+        onBlur={handleNumBlur}
+        style={styles.input}
       />
 
+      {addError && Platform.OS === 'web'? (
+        <Text style={styles.errorText}>{addError}</Text>
+      ) : null}
       <TouchableOpacity
         style={[styles.button, loading && styles.disabledButton]}
-        //onPress={handleSubmit}
+        onPress={handleSubmit}
         disabled={loading}
       >
         <Text style={styles.buttonText}>
@@ -164,12 +177,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#ddd',
   },
-  pickerContainer: {
-    backgroundColor: '#fff',
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#ddd',
-  },
   button: {
     marginTop: 24,
     backgroundColor: '#4a90e2',
@@ -183,5 +190,11 @@ const styles = StyleSheet.create({
   buttonText: {
     color: '#fff',
     fontWeight: 'bold',
+  },
+  errorText: {
+    color: 'red',
+    fontSize: 12,
+    marginBottom: 10,
+    textAlign: 'center',
   },
 });
