@@ -11,7 +11,8 @@ import {
   ScrollView,
   Image,
   Linking,
-  Platform
+  Platform,
+  ImageBackground
 } from 'react-native';
 import { useRouter, Redirect } from 'expo-router';
 import { useUserAuth } from '@/hooks/useUserAuth';
@@ -32,7 +33,6 @@ export default function Signup() {
 
   const emailInputRef = useRef<TextInput | null>(null);
   const passwordInputRef = useRef<TextInput | null>(null);
-
 
   const navigateIndex = () => {
     router.replace('/');
@@ -60,9 +60,9 @@ export default function Signup() {
         },
         body: JSON.stringify({ name, email, password }),
       });
-  
+
       if (response.ok) {
-        const {userAuthToken, refreshToken} = await response.json();
+        const { userAuthToken, refreshToken } = await response.json();
         await login(email, userAuthToken, refreshToken);
       } else {
         setSignupError('Account creation failed.')
@@ -76,127 +76,126 @@ export default function Signup() {
     }
   };
 
-
   if (isAuthenticated === null) {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color="#0000ff" />
       </View>
     );
-  }
-  else if (isAuthenticated === true) {
+  } else if (isAuthenticated === true) {
     return <Redirect href="/(logged-in)" />;
-  }
-  else return (
+  } else return (
     <SafeAreaView style={styles.safeArea}>
-      <ScrollView contentContainerStyle={styles.landingContainer}>
-        {/* Navbar divided into three sections */}
-        <View style={styles.navBar}>
-          {/* Left: Dots & Brand Text wrapped in TouchableOpacity */}
-          <View style={styles.navLeft}>
-            <View style={styles.dotContainer}>
-              <View style={[styles.dot, { backgroundColor: 'black' }]} />
-              <View style={[styles.dot, { backgroundColor: 'black' }]} />
-              <View style={[styles.dot, { backgroundColor: 'black' }]} />
+      <ImageBackground 
+        source={require('../assets/images/signup.gif')} 
+        style={styles.backgroundImage}
+        resizeMode="cover"
+      >
+        <ScrollView contentContainerStyle={styles.landingContainer}>
+          <View style={styles.navBar}>
+            <View style={styles.navLeft}>
+              <View style={styles.dotContainer}>
+                <View style={[styles.dot, { backgroundColor: 'black' }]} />
+                <View style={[styles.dot, { backgroundColor: 'black' }]} />
+                <View style={[styles.dot, { backgroundColor: 'black' }]} />
+              </View>
+              <TouchableOpacity onPress={navigateIndex}>
+                <Text style={styles.brandText}>Centsible</Text>
+              </TouchableOpacity>
             </View>
-            <TouchableOpacity onPress={navigateIndex}>
-              <Text style={styles.brandText}>Centsible</Text>
-            </TouchableOpacity>
+            <View style={styles.logoContainer}>
+              <TouchableOpacity onPress={navigateIndex}>
+                <Image 
+                  source={require('../assets/images/logo.png')} 
+                  style={styles.logo} 
+                  resizeMode="contain" 
+                />
+              </TouchableOpacity>
+            </View>
+            <View style={styles.navRight}>
+              <TouchableOpacity style={styles.navButton} onPress={() => router.push('/')}>
+                <Text style={styles.navButtonText}>Home</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.navButton} onPress={() => router.push('/login')}>
+                <Text style={styles.navButtonText}>Log In</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.navButton} onPress={() => router.push('/signup')}>
+                <Text style={styles.navButtonText}>Sign Up</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.iconButton}
+                onPress={() => Linking.openURL('https://github.com/lynettehemingway/centsible')}
+              >
+                <FontAwesome name="github" size={24} color="#000" />
+              </TouchableOpacity>
+            </View>
           </View>
-          {/* Center: Logo wrapped in TouchableOpacity */}
-          <View style={styles.logoContainer}>
-            <TouchableOpacity onPress={navigateIndex}>
-              <Image 
-                source={require('../assets/images/logo.png')} 
-                style={styles.logo} 
-                resizeMode="contain" 
+
+          <View style={styles.contentContainer}>
+            <View style={styles.signupBox}>
+              <Text style={styles.title}>Create Your Account to Start Saving!</Text>
+              <TextInput
+                placeholder="Name"
+                value={name}
+                onChangeText={setName}
+                style={styles.input}
+                autoCapitalize="none"
+                returnKeyType="next"
+                onSubmitEditing={() => {
+                  if (emailInputRef.current) {
+                    emailInputRef.current.focus();
+                  }
+                }}
               />
-            </TouchableOpacity>
+              <TextInput
+                placeholder="Email"
+                value={email}
+                onChangeText={setEmail}
+                style={styles.input}
+                autoCapitalize="none"
+                returnKeyType="next"
+                ref={emailInputRef}
+                onSubmitEditing={() => {
+                  if (passwordInputRef.current) {
+                    passwordInputRef.current.focus();
+                  }
+                }}
+              />
+              <TextInput
+                ref={passwordInputRef}
+                placeholder="Password"
+                value={password}
+                onChangeText={setPassword}
+                secureTextEntry
+                style={styles.input}
+                returnKeyType="done"
+                onSubmitEditing={handleSignup}
+              />
+              {signupError && Platform.OS === 'web' ? (
+                <Text style={styles.errorText}>{signupError}</Text>
+              ) : null}
+              <TouchableOpacity 
+                style={[styles.button, loading && styles.disabledButton]} 
+                onPress={handleSignup}
+                disabled={loading}
+              >
+                {loading ? (
+                  <ActivityIndicator color="#fff" />
+                ) : (
+                  <Text style={styles.buttonText}>Sign Up</Text>
+                )}
+              </TouchableOpacity>
+              <TouchableOpacity 
+                style={styles.secondaryButton} 
+                onPress={navigateLogin}
+                disabled={loading}
+              >
+                <Text style={styles.secondaryButtonText}>Log In</Text>
+              </TouchableOpacity>
+            </View>
           </View>
-          {/* Right: Navigation Buttons */}
-          <View style={styles.navRight}>
-            <TouchableOpacity style={styles.navButton} onPress={() => router.push('/')}>
-              <Text style={styles.navButtonText}>Home</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.navButton} onPress={() => router.push('/login')}>
-              <Text style={styles.navButtonText}>Log In</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.navButton} onPress={() => router.push('/signup')}>
-              <Text style={styles.navButtonText}>Sign Up</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.iconButton}
-              onPress={() => Linking.openURL('https://github.com/lynettehemingway/centsible')}
-            >
-              <FontAwesome name="github" size={24} color="#000" />
-            </TouchableOpacity>
-          </View>
-        </View>
-        
-        {/* Sign up form container aligned to the left */}
-        <View style={styles.contentContainer}>
-          <View style={styles.signupBox}>
-            <Text style={styles.title}>Create Your Account to Start Saving!</Text>
-            <TextInput
-              placeholder="Username"
-              value={name}
-              onChangeText={setName}
-              style={styles.input}
-              autoCapitalize="none"
-              returnKeyType="next"
-              onSubmitEditing={() => {
-                if (emailInputRef.current) {
-                  emailInputRef.current.focus();
-                }
-              }}
-            />
-            <TextInput
-              placeholder="Email"
-              value={email}
-              onChangeText={setEmail}
-              style={styles.input}
-              autoCapitalize="none"
-              returnKeyType="next"
-              onSubmitEditing={() => {
-                if (passwordInputRef.current) {
-                  passwordInputRef.current.focus();
-                }
-              }}
-            />
-            <TextInput
-              ref={passwordInputRef}
-              placeholder="Password"
-              value={password}
-              onChangeText={setPassword}
-              secureTextEntry
-              style={styles.input}
-              returnKeyType="done"
-              onSubmitEditing={handleSignup}
-            />
-            {signupError && Platform.OS === 'web'? (
-              <Text style={styles.errorText}>{signupError}</Text>
-            ) : null}
-            <TouchableOpacity 
-              style={[styles.button, loading && styles.disabledButton]} 
-              onPress={handleSignup}
-              disabled={loading}
-            >
-              {loading ? (
-                <ActivityIndicator color="#fff" />
-              ) : (
-                <Text style={styles.buttonText}>Sign Up</Text>
-              )}
-            </TouchableOpacity>
-            <TouchableOpacity 
-              style={styles.secondaryButton} 
-              onPress={navigateLogin}
-              disabled={loading}
-            >
-              <Text style={styles.secondaryButtonText}>Log In</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </ScrollView>
+        </ScrollView>
+      </ImageBackground>
     </SafeAreaView>
   );
 }
@@ -205,6 +204,11 @@ const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
     backgroundColor: '#f5f5f5',
+  },
+  backgroundImage: {
+    flex: 1,
+    width: '100%',
+    height: '100%',
   },
   errorText: {
     color: 'red',
@@ -219,10 +223,9 @@ const styles = StyleSheet.create({
   },
   landingContainer: {
     flexGrow: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: 'transparent',
     paddingBottom: 20,
   },
-  // Navbar with a pixelated look and thicker borders
   navBar: {
     width: '100%',
     height: 70,
@@ -259,6 +262,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginLeft: 15,
     color: '#000',
+    fontFamily: 'SpaceMono',
   },
   // Center section: logo container (centers the logo).
   logoContainer: {
@@ -285,6 +289,7 @@ const styles = StyleSheet.create({
     color: '#000',
     fontSize: 14,
     fontWeight: 'bold',
+    fontFamily: 'SpaceMono',
   },
   iconButton: {
     marginHorizontal: 4,
@@ -316,6 +321,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: 30,
     color: '#333',
+    fontFamily: 'SpaceMono',
   },
   input: {
     height: 50,
@@ -325,6 +331,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 15,
     marginBottom: 15,
     backgroundColor: '#fff',
+    fontFamily: 'SpaceMono',
   },
   button: {
     backgroundColor: '#71c193',
@@ -340,6 +347,7 @@ const styles = StyleSheet.create({
     color: 'white',
     fontWeight: 'bold',
     fontSize: 16,
+    fontFamily: 'SpaceMono',
   },
   secondaryButton: {
     padding: 15,
@@ -353,5 +361,6 @@ const styles = StyleSheet.create({
     color: '#71c193',
     fontWeight: 'bold',
     fontSize: 16,
+    fontFamily: 'SpaceMono',
   },
 });

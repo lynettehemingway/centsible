@@ -13,6 +13,11 @@ import dayjs from 'dayjs';
 import { Picker } from '@react-native-picker/picker';
 import { useRouter } from 'expo-router';
 import { authFetch } from '@/utils/authFetch';
+import Sidebar from '@/components/Sidebar';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useUserAuth } from '@/hooks/useUserAuth';
+
+
 
 export default function AddExpense() {
   const router = useRouter();
@@ -24,6 +29,29 @@ export default function AddExpense() {
   const [amount, setAmount] = useState('0.00');
 
   const [loading, setLoading] = useState(false);
+  
+  const API_URL = process.env.EXPO_PUBLIC_API_URL;
+  const { logout } = useUserAuth();
+
+  const handleLogout = async () => {
+    setLoading(true);
+    try {
+      const email = await AsyncStorage.getItem('email');
+      const refreshToken = await AsyncStorage.getItem('refreshToken');
+      await fetch(`${API_URL}/users/logout`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, refreshToken }),
+      });
+    } catch (e) {
+      console.warn('Logout error', e);
+    } finally {
+      await AsyncStorage.multiRemove(['userAuthToken', 'refreshToken', 'email', 'name']);
+      await logout();
+      setLoading(false);
+    }
+  };
+
   const [addError, setAddError] = useState<string | null>(null);
 
   const handleNumBlur = () => {
@@ -96,6 +124,8 @@ export default function AddExpense() {
 
   return (
     <View style={styles.container}>
+      <Sidebar loading={loading} handleLogout={handleLogout} />
+      <View style={styles.formArea}>
       <Text style={styles.label}>Date</Text>
       <TouchableOpacity
         style={styles.input}
@@ -105,31 +135,33 @@ export default function AddExpense() {
       </TouchableOpacity>
       {showPicker && (
         <DateTimePicker
-          date={date}
-          mode="single"
-          timePicker
-          use12Hours
-          style={styles.input}
-          styles={{
-            today: { borderWidth: 1, borderColor: '#ddd' , borderRadius: 8 },
-            selected: { backgroundColor: 'rgba(113,193,147, 0.9)', borderRadius: 8 },
-            button_next: {backgroundColor: '#ddd'},
-            button_prev: {backgroundColor: '#ddd'},
-          }}
-          onChange={({ date }) =>  setDate(date)}
-        />
+        date={date}
+        mode="single"
+        timePicker
+        use12Hours
+        style={styles.input}
+        styles={{
+          today: { borderWidth: 1, borderColor: '#ddd' , borderRadius: 8 },
+          selected: { backgroundColor: 'rgba(113,193,147, 0.9)', borderRadius: 8 },
+          button_next: {backgroundColor: '#ddd'},
+          button_prev: {backgroundColor: '#ddd'},
+        }}
+        onChange={({ date }) =>  setDate(date)}
+      />
       )}
 
       <Text style={styles.label}>Category</Text>
-      <Picker
-        selectedValue={category}
-        onValueChange={(val) => setCategory(val)}
-        style={styles.input}
-      >
-        {categories.map((c) => (
-          <Picker.Item key={c} label={c} value={c} style={styles.input}/>
-        ))}
-      </Picker>
+      <View style={styles.pickerContainer}>
+        <Picker
+          selectedValue={category}
+          onValueChange={(val) => setCategory(val)}
+          style={styles.input}
+        >
+          {categories.map((c) => (
+            <Picker.Item key={c} label={c} value={c} />
+          ))}
+        </Picker>
+      </View>
 
       <Text style={styles.label}>Amount</Text>
       <TextInput
@@ -141,19 +173,20 @@ export default function AddExpense() {
         onBlur={handleNumBlur}
         style={styles.input}
       />
-
       {addError && Platform.OS === 'web'? (
         <Text style={styles.errorText}>{addError}</Text>
       ) : null}
+
       <TouchableOpacity
         style={[styles.button, loading && styles.disabledButton]}
-        onPress={handleSubmit}
+        //onPress={handleSubmit}
         disabled={loading}
       >
         <Text style={styles.buttonText}>
           {loading ? 'Saving...' : 'Save Expense'}
         </Text>
       </TouchableOpacity>
+      </View>
     </View>
   );
 }
@@ -164,6 +197,10 @@ const styles = StyleSheet.create({
     padding: 20,
     backgroundColor: '#f5f5f5',
   },
+  formArea: {
+    flex: 1,
+    padding: 20,
+  },
   label: {
     marginTop: 12,
     marginBottom: 4,
@@ -173,6 +210,12 @@ const styles = StyleSheet.create({
   input: {
     backgroundColor: '#fff',
     padding: 12,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#ddd',
+  },
+  pickerContainer: {
+    backgroundColor: '#fff',
     borderRadius: 8,
     borderWidth: 1,
     borderColor: '#ddd',

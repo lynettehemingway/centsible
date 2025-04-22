@@ -46,17 +46,17 @@ export default function Login() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          email,
+          email: email.toLowerCase(),
           password,
         }),
       });
 
       if (response.ok) {
         const {userAuthToken, refreshToken} = await response.json();
-        await login(email, userAuthToken, refreshToken);
+        await login(email.toLowerCase(), userAuthToken, refreshToken);
       } else {
-        setLoginError('Invalid username or password.');
-        Alert.alert('Error', 'Invalid username or password.');
+        setLoginError('Invalid email or password.');
+        Alert.alert('Error', 'Invalid email or password.');
       }
     } catch (error) {
       setLoginError('Server error. Please try again later.');
@@ -88,7 +88,7 @@ export default function Login() {
   }
   else return (
     <ImageBackground 
-      source={require('../assets/images/banner.png')} 
+      source={require('../assets/images/login0.gif')} 
       style={styles.background} 
       resizeMode="cover"
     >
@@ -191,6 +191,11 @@ export default function Login() {
 const styles = StyleSheet.create({
   background: {
     flex: 1,
+    width: '100%',
+    height: '100%',
+  },
+  backgroundImage: {
+    resizeMode: 'contain', 
   },
   loadingContainer: {
     flex: 1,
@@ -242,6 +247,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginLeft: 15,
     color: '#000',
+    fontFamily: 'SpaceMono',
   },
   logoContainer: {
     flex: 1,
@@ -266,6 +272,7 @@ const styles = StyleSheet.create({
     color: '#000',
     fontSize: 14,
     fontWeight: 'bold',
+    fontFamily: 'SpaceMono',
   },
   iconButton: {
     marginHorizontal: 4,
@@ -296,6 +303,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: 30,
     color: '#333',
+    fontFamily: 'SpaceMono',
   },
   input: {
     height: 50,
@@ -305,6 +313,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 15,
     marginBottom: 15,
     backgroundColor: '#fff',
+    fontFamily: 'SpaceMono',
   },
   button: {
     backgroundColor: '#71c193',
@@ -320,6 +329,7 @@ const styles = StyleSheet.create({
     color: 'white',
     fontWeight: 'bold',
     fontSize: 16,
+    fontFamily: 'SpaceMono',
   },
   secondaryButton: {
     padding: 15,
@@ -333,5 +343,6 @@ const styles = StyleSheet.create({
     color: '#71c193',
     fontWeight: 'bold',
     fontSize: 16,
+    fontFamily: 'SpaceMono',
   },
 });
