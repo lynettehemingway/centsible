@@ -20,18 +20,21 @@ const defaultCategories = [
 
 router.post('/login', async (req, res) => {
   let collection = await db.collection("users");
-  let user = await collection.findOne({email: req.body.email});
+  const normalizedEmail = req.body.email.toLowerCase();
+  let user = await collection.findOne({email: normalizedEmail});
 
   if (!user) return res.status(401).send();
   else try {
     if (await bcrypt.compare(req.body.password, user.password)) {
-      const payload = {email: user.email};
-      const userAuthToken = jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET, {expiresIn: '30m'});
-      const refreshToken = jwt.sign(payload, process.env.REFRESH_TOKEN_SECRET, {expiresIn: '7d'});
+      const payload = { email: user.email };
+      const userAuthToken = jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '30m' });
+      const refreshToken = jwt.sign(payload, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '7d' });
 
-      const tokens = await collection.findOne({email: req.body.email});
-      if (tokens.refreshTokens >= 5) collection.updateOne({email: req.body.email}, {$pull: {refreshTokens: tokens[0]}});
-      await collection.updateOne({email: req.body.email}, {$push: {refreshTokens: refreshToken}});
+      const tokens = await collection.findOne({ email: normalizedEmail });
+      if (tokens.refreshTokens.length >= 5) {
+        await collection.updateOne({ email: normalizedEmail }, { $pop: { refreshTokens: -1 } });
+      }
+      await collection.updateOne({ email: normalizedEmail }, { $push: { refreshTokens: refreshToken } });
 
 
       res.status(200).send({userAuthToken: userAuthToken, refreshToken: refreshToken});
