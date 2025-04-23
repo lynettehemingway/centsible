@@ -11,6 +11,7 @@ import {
 import { useRouter } from "expo-router";
 import { useFocusEffect } from "expo-router";
 import { Platform } from "react-native";
+import { fetchUserData, clearUserData } from "@/utils/userDataStorage";
 
 export const useUserAuth = () => {
     const router = useRouter();
@@ -28,11 +29,15 @@ export const useUserAuth = () => {
         await setRefreshToken(refreshToken);
         await setIsAuthenticated(true);
 
+        await fetchUserData();
+
         router.replace('/(logged-in)');
     }, []);
 
     const logout = useCallback(async () => {
         await clearTokens();
+        await clearUserData();
+
         setIsAuthenticated(false);
         
         router.replace('/login');

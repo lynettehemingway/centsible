@@ -12,6 +12,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
 import { FontAwesome } from '@expo/vector-icons';
 import { useUserAuth } from '@/hooks/useUserAuth';
+import { getName } from '@/utils/userDataStorage';
 import Sidebar from '@/components/Sidebar';
 
 
@@ -25,12 +26,8 @@ export default function Home() {
 
   useEffect(() => {
     (async () => {
-      try {
-        const stored = await AsyncStorage.getItem('name');
-        if (stored) setName(stored);
-      } catch (e) {
-        console.warn('Failed to load name', e);
-      }
+      const name = await getName();
+      if (name) setName(name);
     })();
   }, []);
 

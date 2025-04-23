@@ -27,10 +27,20 @@ router.post('/addexpense', authenticateToken, async (req, res) => {
 });
 
 
-router.get('/getdashboard', authenticateToken, async (req, res) => {
+router.get('/getcategories', authenticateToken, async (req, res) => {
   let collection = await db.collection("users");
 
+  const user = await collection.findOne({ email: req.user.email }, { projection: { categories: 1, _id: 0 } });
+  if (user && user.categories) res.status(200).send({categories: user.categories});
+  else res.status(404).send();
+});
 
+router.get('/getname', authenticateToken, async (req, res) => {
+  let collection = await db.collection("users");
+
+  const user = await collection.findOne({ email: req.user.email }, { projection: { name: 1, _id: 0 } });
+  if (user && user.name) res.status(200).send({name: user.name});
+  else res.status(404).send();
 });
 
 

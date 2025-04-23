@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import {
+  Dimensions,
   View,
   Text,
   TextInput,
@@ -7,6 +8,7 @@ import {
   StyleSheet,
   Platform,
   Alert,
+  Pressable,
 } from 'react-native';
 import DateTimePicker, { DateType } from 'react-native-ui-datepicker';
 import dayjs from 'dayjs';
@@ -14,11 +16,12 @@ import { Picker } from '@react-native-picker/picker';
 import { useRouter } from 'expo-router';
 import { authFetch } from '@/utils/authFetch';
 import Sidebar from '@/components/Sidebar';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { getEmail, getRefreshToken } from '@/utils/userAuthStorage';
+import { getCategories } from '@/utils/userDataStorage';
 import { useUserAuth } from '@/hooks/useUserAuth';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-
+const { width, height } = Dimensions.get('window');
 
 export default function AddExpense() {
   const router = useRouter();
@@ -26,7 +29,7 @@ export default function AddExpense() {
   const [date, setDate] = useState<DateType>(new Date());
   const [showPicker, setShowPicker] = useState(false);
   const [categories, setCategories] = useState<string[]>([]);
-  const [category, setCategory] = useState('test');
+  const [category, setCategory] = useState<string | null>(null);
   const [amount, setAmount] = useState('0.00');
 
   const [loading, setLoading] = useState(false);
@@ -37,8 +40,8 @@ export default function AddExpense() {
   const handleLogout = async () => {
     setLoading(true);
     try {
-      const email = await AsyncStorage.getItem('email');
-      const refreshToken = await AsyncStorage.getItem('refreshToken');
+      const email = await getEmail();
+      const refreshToken = await getRefreshToken();
       await fetch(`${API_URL}/users/logout`, {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
@@ -47,7 +50,6 @@ export default function AddExpense() {
     } catch (e) {
       console.warn('Logout error', e);
     } finally {
-      await AsyncStorage.multiRemove(['userAuthToken', 'refreshToken', 'email', 'name']);
       await logout();
       setLoading(false);
     }
@@ -63,7 +65,7 @@ export default function AddExpense() {
 
   const handleSubmit = async () => {
     const formattedDate = date ? dayjs(date).toDate() : null;
-    if (!amount || !formattedDate) {
+    if (!amount || !formattedDate || category === null || amount === '0.00') {
       Alert.alert('Error', 'Please enter an amount.');
       setAddError('Please enter an amount.');
       return;
@@ -105,23 +107,17 @@ export default function AddExpense() {
     }
   };
 
-  // const loadCategories = async () => {
-  //   try {
-  //       const storedCategories = await service.getData('categories');
-  //       if (storedCategories) {
-  //           const parsed = JSON.parse(storedCategories);
-  //           setCategories(parsed);
-  //           setCategory(parsed[0]);
-  //       }
-  //   } catch (error) {
-  //       console.error('Failed to load categories');
-  //       router.back();
-  //   }
-  // }
+  const loadCategories = async () => {
+    const data = await getCategories();
+    if (Array.isArray(data)){
+      setCategories(data);
+      setCategory(data[0]);
+    }
+  }
 
-  // useEffect(() => {
-  //   loadCategories();
-  // }, []);
+  useEffect(() => {
+    loadCategories();
+  }, []);
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -133,13 +129,14 @@ export default function AddExpense() {
             <Text style={styles.label}>Date</Text>
             <View style={{zIndex: 1}}>
               <TouchableOpacity
-                style={styles.input}
+                style={[styles.input, {zIndex: 1}]}
                 onPress={() => setShowPicker(!showPicker)}
               >
                 <Text>{dayjs(date).format('MMM D, YYYY (h:mm A)')}</Text>
                 
               </TouchableOpacity>
               {showPicker && (
+                <>
                 <DateTimePicker
                 date={date}
                 mode="single"
@@ -154,6 +151,8 @@ export default function AddExpense() {
                 }}
                 onChange={({ date }) =>  setDate(date)}
               />
+              <Pressable style={styles.calendarBack} onPress={() => setShowPicker(false)}/>
+              </>
               )}
             </View>
             <Text style={styles.label}>Category</Text>
@@ -169,7 +168,7 @@ export default function AddExpense() {
               </Picker>
             </View>
 
-            <Text style={styles.label}>Amount</Text>
+            <Text style={styles.label}>Amount ($)</Text>
             <TextInput
               placeholder="0.00"
               value={amount}
@@ -252,7 +251,6 @@ const styles = StyleSheet.create({
   errorText: {
     color: 'red',
     fontSize: 12,
-    marginBottom: 10,
     textAlign: 'center',
   },
   calendarOverlay: {
@@ -266,5 +264,14 @@ const styles = StyleSheet.create({
     height: 'auto',
     top: '100%',
     left: '0%',
+    zIndex: 1,
+  },
+  calendarBack: {
+    position: 'fixed',
+    top: 0,
+    left: 0,
+    height: height,
+    width: width,
+    cursor: 'default' as any,
   }
 });

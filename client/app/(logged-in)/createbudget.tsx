@@ -45,8 +45,8 @@ export default function CreateBudget() {
           <TextInput style={styles.input} placeholder="0.00" keyboardType="decimal-pad" />
 
           <Text style={styles.label}>Time Period</Text>
-          <View style={styles.input}>
-            <Picker selectedValue={'Monthly'} onValueChange={() => {}}>
+          <View style={styles.pickerContainer}>
+            <Picker selectedValue={'Monthly'} onValueChange={() => {}} style={styles.input}>
               <Picker.Item label="Weekly" value="Weekly" />
               <Picker.Item label="Monthly" value="Monthly" />
               <Picker.Item label="Yearly" value="Yearly" />
@@ -82,6 +82,12 @@ const styles = StyleSheet.create({
   input: {
     backgroundColor: '#fff',
     padding: 12,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#ddd',
+  },
+  pickerContainer: {
+    backgroundColor: '#fff',
     borderRadius: 8,
     borderWidth: 1,
     borderColor: '#ddd',
