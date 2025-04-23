@@ -314,7 +314,7 @@ const styles = StyleSheet.create({
 
   widgetBox: {
     width: '48%',
-    backgroundColor: '#fff',
+    backgroundColor: '#fff', //u
     borderRadius: 12,
     padding: 16,
     marginBottom: 20,
