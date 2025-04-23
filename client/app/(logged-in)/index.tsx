@@ -14,12 +14,13 @@ import {
   VictoryBar,
   VictoryAxis,
   VictoryTheme,
+  VictoryStack
 } from 'victory';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { FontAwesome } from '@expo/vector-icons';
 import { useUserAuth } from '@/hooks/useUserAuth';
-import { getName, getSummary, fetchUserData } from '@/utils/userDataStorage';
+import { getName, getSummary, fetchUserData, getBudgets } from '@/utils/userDataStorage';
 import Sidebar from '@/components/Sidebar';
 
 type SummaryItem = {
@@ -32,6 +33,18 @@ type FormattedSummaryItem = {
   y: number;
 };
 
+type BudgetItem = {
+  name: string;
+  timeperiod: "Monthly" | "Weekly" | "Yearly";
+  amount: number;
+};
+
+type StackedData = {
+  Monthly: { x: string; y: number; label: string }[];
+  Weekly: { x: string; y: number; label: string }[];
+  Yearly: { x: string; y: number; label: string }[];
+};
+
 export default function Home() {
   const API_URL = process.env.EXPO_PUBLIC_API_URL;
   const router = useRouter();
@@ -39,8 +52,14 @@ export default function Home() {
 
   const [name, setName] = useState<string>('');
   const [summary, setSummary] = useState<FormattedSummaryItem[]>([]);
+  const [stacked, setStacked] = useState<StackedData>({
+    Monthly: [],
+    Weekly: [],
+    Yearly: [],
+  });
   const [loading, setLoading] = useState(true);
   const [mapExists, setMapExists] = useState(false);
+  const [stackExists, setStackExists] = useState(false);
 
   const currentMonth = new Date().getMonth();
   const currentYear = new Date().getFullYear();
@@ -63,7 +82,25 @@ useFocusEffect(
         }));
         setSummary(formatted);
       }
+      const budgetItems = await getBudgets() as BudgetItem[];
 
+      if (isActive && budgetItems){
+      const stacked1: StackedData = {
+        Monthly: [],
+        Weekly: [],
+        Yearly: [],
+      };
+      for (const item of budgetItems) {
+        setStackExists(true);
+        stacked1[item.timeperiod].push({
+          x: item.timeperiod, // for stacking horizontally per time period
+          y: item.amount,
+          label: item.name,
+        });
+      }
+
+      setStacked(stacked1);
+    }
       if (isActive) setLoading(false);
     })();
 
@@ -186,6 +223,35 @@ useFocusEffect(
                 <View style={styles.widgetContent}>
                   <Text style={styles.placeholderText}>[Budget breakdown]</Text>
                 </View>
+
+                <View style={{ padding: 16 }}>
+      {(stackExists && <VictoryChart
+        theme={VictoryTheme.material}
+        domainPadding={20}
+        horizontal
+      >
+        <VictoryAxis
+          dependentAxis
+          tickFormat={["Monthly", "Weekly", "Yearly"]}
+        />
+        <VictoryAxis />
+
+        <VictoryStack>
+          {Object.values(stacked).flatMap((group, index) =>
+            group.map((_, i, arr) =>
+              i === 0 ? (
+                <VictoryBar
+                  key={index}
+                  data={arr}
+                  labels={({ datum }) => datum.label}
+                  labelComponent={<></>}
+                />
+              ) : null
+            )
+          )}
+        </VictoryStack>
+      </VictoryChart>)}
+    </View>
               </TouchableOpacity>
             </View>
 

@@ -97,6 +97,35 @@ router.get('/expenses/summary', authenticateToken, async (req, res) => {
 return res.status(404).send();
 });
 
+router.get('/budgets/summary', async (req, res) => {
+    const collection = db.collection('users');
+
+    const user = await collection.findOne({ email: req.user.email });
+
+    if (!user || !user.budget) {
+      return res.status(404).send();
+    }
+
+    const totals = {
+      Monthly: 0,
+      Weekly: 0,
+      Yearly: 0
+    };
+
+    try{
+    for (const item of user.budget) {
+      if (item.timeperiod in totals) {
+        totals[item.timeperiod] += item.amount;
+      }
+    }
+
+    const formatted = Object.entries(totals).map(([x, y]) => ({ x, y }));
+
+    res.json(formatted);
+  } catch (err) {
+    return res.status(404).send();
+  }
+  });
 
 function authenticateToken(req, res, next) {
   const authHeader = req.headers['authorization'];
