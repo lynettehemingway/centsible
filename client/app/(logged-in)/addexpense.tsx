@@ -33,7 +33,7 @@ export default function AddExpense() {
   const [amount, setAmount] = useState('0.00');
 
   const [loading, setLoading] = useState(false);
-  
+
   const API_URL = process.env.EXPO_PUBLIC_API_URL;
   const { logout } = useUserAuth();
 

@@ -1,5 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import LottieView from 'lottie-react-native';
+
 import {
   View,
   Text,
@@ -17,7 +18,7 @@ import {
   VictoryTheme,
 } from 'victory';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useRouter } from 'expo-router';
+import { useRouter, useFocusEffect } from 'expo-router';
 import { FontAwesome } from '@expo/vector-icons';
 import { useUserAuth } from '@/hooks/useUserAuth';
 import { getName, getSummary, fetchUserData } from '@/utils/userDataStorage';
@@ -41,27 +42,41 @@ export default function Home() {
   const [name, setName] = useState<string>('');
   const [summary, setSummary] = useState<FormattedSummaryItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [mapExists, setMapExists] = useState(false);
 
-  const currentAmount = 500;
-  const goalAmount = 1000;
-  const progress = currentAmount / goalAmount;
+  const currentMonth = new Date().getMonth();
+  const currentYear = new Date().getFullYear();
+  const [currentAmount, setCurrentAmount] = useState(0);
+  const [goalAmount, setGoalAmount] = useState(1); // default to 1 to avoid div-by-zero
 
-  useEffect(() => {
+
+useFocusEffect(
+  useCallback(() => {
+    let isActive = true; // optional safety if async runs after unmount
+
     (async () => {
       await fetchUserData();
       const name = await getName();
-      if (name) setName(name);
+      if (isActive && name) setName(name);
 
-      const result = (await getSummary()) as SummaryItem[];
-      const formatted = result.map(item => ({
-        x: item.category,
-        y: item.totalAmount,
-      }));
+      const result = await getSummary() as SummaryItem[];
+      if (isActive && result) {
+        setMapExists(true);
+        const formatted = result.map(item => ({
+          x: item.category,
+          y: item.totalAmount,
+        }));
+        setSummary(formatted);
+      }
 
-      setSummary(formatted);
-      setLoading(false);
+      if (isActive) setLoading(false);
     })();
-  }, []);
+
+    return () => {
+      isActive = false;
+    };
+  }, [])
+);
 
   const handleLogout = async () => {
     setLoading(true);
@@ -110,10 +125,10 @@ export default function Home() {
                 onPress={navigate('/(logged-in)/addexpense')}
               >
                 <View style={styles.widgetHeader}>
-                  <Text style={styles.widgetTitle}>Expenses Summary</Text>
+                  <Text style={styles.widgetTitle}>Expenses Summary {currentMonth + 1}/{currentYear}</Text>
                   <FontAwesome name="bar-chart" size={20} color="#4a90e2" />
                 </View>
-                <VictoryChart
+                {(mapExists && <VictoryChart
                   theme={VictoryTheme.material}
                   domainPadding={{ x: 40 }}
                   height={160}
@@ -146,7 +161,7 @@ export default function Home() {
                   />
                   <VictoryBar
                     data={summary}
-                    labels={({ datum }) => `$${datum.y}`}
+                    labels={({ datum }) => `$${datum.y.toFixed()}`}
                     animate={{ duration: 800, easing: 'bounce' }}
                     cornerRadius={6}
                     style={{
@@ -161,7 +176,7 @@ export default function Home() {
                       },
                     }}
                   />
-                </VictoryChart>
+                </VictoryChart>)}
               </TouchableOpacity>
 
               {/* Budget Overview Widget */}
@@ -181,13 +196,14 @@ export default function Home() {
 
             {/* Progress Section */}
             <View style={styles.progressContainer}>
-              <Text style={styles.progressTitle}>Your Progress</Text>
-              <LottieView
-                source={require('../../assets/progress.json')}
-                progress={progress}
-                style={styles.progressImage}
-              />
-            </View>
+            <Text style={styles.progressTitle}>Your Progress</Text>
+            <LottieView
+              source={require('../../assets/progress.json')}
+              progress={Math.min(currentAmount / goalAmount, 1)}
+              style={styles.progressImage}
+            />
+          </View>
+
           </View>
         </ScrollView>
       </View>
@@ -286,6 +302,6 @@ const styles = StyleSheet.create({
   },
   progressImage: {
     width: '100%',
-    height: '80%',
+    height: 150,
   },
 });

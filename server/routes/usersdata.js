@@ -1,5 +1,4 @@
 import express from "express";
-import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 import db from "../db/connection.js";
@@ -27,6 +26,28 @@ router.post('/addexpense', authenticateToken, async (req, res) => {
 });
 
 
+router.post('/addbudget', authenticateToken, async (req, res) => {
+  let collection = await db.collection("users");
+
+  const userEmail = String(req.user.email);
+  const name = new Date(req.body.name);
+  const timeperiod = String(req.body.timeperiod);
+  const amount = parseFloat(req.body.amount);
+
+  const budget = {name, timeperiod, amount};
+
+  await collection.updateOne({email: userEmail}, {$push: {budgets: budget}});
+  res.status(201).send();
+});
+
+router.get('/getbudget', authenticateToken, async (req, res) => {
+  let collection = await db.collection("users");
+
+  const user = await collection.findOne({ email: req.user.email }, { projection: { budgets: 1, _id: 0 } });
+  if (user && user.budgets) res.status(200).send({budgets: user.budgets});
+  else res.status(404).send();
+});
+
 router.get('/getcategories', authenticateToken, async (req, res) => {
   let collection = await db.collection("users");
 
@@ -49,7 +70,9 @@ router.get('/expenses/summary', authenticateToken, async (req, res) => {
   const { month, year } = req.query;
   const user = await collection.findOne({email: req.user.email});
 
-  const filteredExpenses = user.expenses.filter(exp => {
+  if (user){
+  try{
+  const filteredExpenses = user?.expenses.filter(exp => {
     const date = new Date(exp.date);
     return (
       date.getFullYear() === parseInt(year) && date.getMonth() === parseInt(month)
@@ -67,6 +90,11 @@ router.get('/expenses/summary', authenticateToken, async (req, res) => {
   }));
 
   return res.json(summary);
+} catch (err){
+  return res.status(404).send();
+}
+}
+return res.status(404).send();
 });
 
 
