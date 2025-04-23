@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -45,24 +45,33 @@ export default function Home() {
   const currentMonth = new Date().getMonth();
   const currentYear = new Date().getFullYear();
 
-  useFocusEffect(() => {
+useFocusEffect(
+  useCallback(() => {
+    let isActive = true; // optional safety if async runs after unmount
+
     (async () => {
       await fetchUserData();
       const name = await getName();
-      if (name) setName(name);
+      if (isActive && name) setName(name);
 
       const result = await getSummary() as SummaryItem[];
-      if (result) {
-      setMapExists(true);
-      const formatted = result.map(item => ({
-        x: item.category,
-        y: item.totalAmount,
-      }));
-      setSummary(formatted);
+      if (isActive && result) {
+        setMapExists(true);
+        const formatted = result.map(item => ({
+          x: item.category,
+          y: item.totalAmount,
+        }));
+        setSummary(formatted);
       }
-      setLoading(false);
+
+      if (isActive) setLoading(false);
     })();
-  });
+
+    return () => {
+      isActive = false;
+    };
+  }, [])
+);
 
   const handleLogout = async () => {
     setLoading(true);
@@ -111,7 +120,7 @@ export default function Home() {
                 onPress={navigate('/(logged-in)/addexpense')}
               >
                 <View style={styles.widgetHeader}>
-                  <Text style={styles.widgetTitle}>Expenses Summary</Text>
+                  <Text style={styles.widgetTitle}>Expenses Summary {currentMonth + 1}/{currentYear}</Text>
                   <FontAwesome name="bar-chart" size={20} color="#4a90e2" />
                 </View>
                 {(mapExists && <VictoryChart
@@ -147,7 +156,7 @@ export default function Home() {
                   />
                   <VictoryBar
                     data={summary}
-                    labels={({ datum }) => `$${datum.y}`}
+                    labels={({ datum }) => `$${datum.y.toFixed()}`}
                     animate={{ duration: 800, easing: 'bounce' }}
                     cornerRadius={6}
                     style={{

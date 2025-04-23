@@ -112,7 +112,11 @@ export default function CreateBudget() {
                       style={[styles.button, loading && styles.disabledButton]}
                       onPress={handleSubmit}
                       disabled={loading}
-                    ></TouchableOpacity>
+                    >
+                      <Text style={styles.buttonText}>
+                                      {loading ? 'Adding...' : 'Add Budget'}
+                                    </Text>
+                    </TouchableOpacity>
         </View>
 
         </View>
@@ -149,6 +153,10 @@ const styles = StyleSheet.create({
     marginBottom: 4,
     fontSize: 16,
     color: '#333',
+  },
+  buttonText: {
+    color: '#fff',
+    fontWeight: 'bold',
   },
   input: {
     backgroundColor: '#fff',
