@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import LottieView from 'lottie-react-native';
 import {
   View,
   Text,
@@ -40,6 +41,10 @@ export default function Home() {
   const [name, setName] = useState<string>('');
   const [summary, setSummary] = useState<FormattedSummaryItem[]>([]);
   const [loading, setLoading] = useState(true);
+
+  const currentAmount = 500;
+  const goalAmount = 1000;
+  const progress = currentAmount / goalAmount;
 
   useEffect(() => {
     (async () => {
@@ -177,10 +182,10 @@ export default function Home() {
             {/* Progress Section */}
             <View style={styles.progressContainer}>
               <Text style={styles.progressTitle}>Your Progress</Text>
-              <Image
-                source={require('../../assets/images/banner.png')}
+              <LottieView
+                source={require('../../assets/progress.json')}
+                progress={progress}
                 style={styles.progressImage}
-                resizeMode="contain"
               />
             </View>
           </View>
@@ -281,6 +286,6 @@ const styles = StyleSheet.create({
   },
   progressImage: {
     width: '100%',
-    height: 150,
+    height: '80%',
   },
 });
