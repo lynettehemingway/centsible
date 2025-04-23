@@ -8,13 +8,28 @@ import {
   ActivityIndicator,
   Image,
 } from 'react-native';
+import {
+  VictoryChart,
+  VictoryBar,
+  VictoryAxis,
+  VictoryTheme
+} from 'victory';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
 import { FontAwesome } from '@expo/vector-icons';
 import { useUserAuth } from '@/hooks/useUserAuth';
-import { getName } from '@/utils/userDataStorage';
+import { getName, getSummary, fetchUserData } from '@/utils/userDataStorage';
 import Sidebar from '@/components/Sidebar';
 
+type SummaryItem = {
+  category: string;
+  totalAmount: number;
+};
+
+type FormattedSummaryItem = {
+  x: string;
+  y: number;
+};
 
 export default function Home() {
   const API_URL = process.env.EXPO_PUBLIC_API_URL;
@@ -22,12 +37,23 @@ export default function Home() {
   const { logout } = useUserAuth();
 
   const [name, setName] = useState<string>('');
-  const [loading, setLoading] = useState(false);
+  const [summary, setSummary] = useState<FormattedSummaryItem[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     (async () => {
+      await fetchUserData();
       const name = await getName();
       if (name) setName(name);
+
+      const result = await getSummary() as SummaryItem[];
+      const formatted = result.map(item => ({
+        x: item.category,
+        y: item.totalAmount,
+      }));
+
+      setSummary(formatted);
+      setLoading(false);
     })();
   }, []);
 
@@ -44,7 +70,6 @@ export default function Home() {
     } catch (e) {
       console.warn('Logout error', e);
     } finally {
-      await AsyncStorage.multiRemove(['userAuthToken', 'refreshToken', 'email', 'name']);
       await logout();
       setLoading(false);
     }
@@ -54,6 +79,11 @@ export default function Home() {
     router.push(path as any);
   };
 
+  if (loading) return (
+    <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color="#0000ff" />
+          </View>
+  )
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
@@ -74,10 +104,11 @@ export default function Home() {
                 <Text style={styles.widgetTitle}>Expenses Summary</Text>
                 <FontAwesome name="bar-chart" size={20} color="#4a90e2" />
               </View>
-              {/* Placeholder for chart / data */}
-              <View style={styles.widgetContent}>
-                <Text style={styles.placeholderText}>[Monthly chart here]</Text>
-              </View>
+              <VictoryChart theme={VictoryTheme.material} domainPadding={25} height={200} padding={40}>
+                <VictoryAxis style={{tickLabels: { fontSize: 10 }}}/>
+                <VictoryAxis dependentAxis style={{tickLabels: { fontSize: 10 }}}/>
+                <VictoryBar data={summary}/>
+              </VictoryChart>
             </TouchableOpacity>
 
             {/* Budget Overview Widget */}
@@ -141,6 +172,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: 12,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   linkText: {
     color: '#fff',

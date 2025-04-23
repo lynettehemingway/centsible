@@ -4,10 +4,11 @@ import { authFetch } from "./authFetch";
 export const fetchUserData = async () => {
     fetchName();
     fetchCategories();
+    fetchSummary();
 }
 
 export const clearUserData = async () => {
-    await AsyncStorage.multiRemove(['name', 'categories',]);
+    await AsyncStorage.multiRemove(['name', 'categories', 'summary']);
 }
 
 export const fetchName = async () => {
@@ -20,7 +21,6 @@ export const fetchName = async () => {
         const { name } = await response.json();
 
         const ret = await AsyncStorage.setItem('name', name);
-        console.log(`name ;${name}`);
         return ret;
     }
     catch (err){
@@ -60,3 +60,27 @@ export const getCategories = async () => {
       return null;
     }
   };
+
+export const fetchSummary = async () => {
+    try {
+        const date = new Date();
+        const response = await authFetch(
+            `${process.env.EXPO_PUBLIC_API_URL}/users/data/expenses/summary?month=${date.getMonth()}&year=${date.getFullYear()}`,
+            { method: 'GET', headers: { 'Content-Type': 'application/json' }, }
+          );
+        
+        const summary = await response.json();
+        return await AsyncStorage.setItem('summary', JSON.stringify(summary));
+    } catch (err) {
+        return null;
+    }
+}
+
+export const getSummary = async () => {
+    try {
+        const summary = await AsyncStorage.getItem('summary');
+        return summary ? JSON.parse(summary) : null;
+    } catch (err) {
+        return null;
+    }
+}

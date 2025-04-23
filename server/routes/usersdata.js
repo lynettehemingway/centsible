@@ -43,6 +43,32 @@ router.get('/getname', authenticateToken, async (req, res) => {
   else res.status(404).send();
 });
 
+router.get('/expenses/summary', authenticateToken, async (req, res) => {
+  let collection = await db.collection("users");
+
+  const { month, year } = req.query;
+  const user = await collection.findOne({email: req.user.email});
+
+  const filteredExpenses = user.expenses.filter(exp => {
+    const date = new Date(exp.date);
+    return (
+      date.getFullYear() === parseInt(year) && date.getMonth() === parseInt(month)
+    );
+  });
+
+  const totals = {};
+  for (const exp of filteredExpenses){
+    if (!totals[exp.category]) totals[exp.category] = 0;
+    totals[exp.category] += exp.amount;
+  }
+
+  const summary = Object.entries(totals).map(([category, totalAmount]) => ({
+    category, totalAmount
+  }));
+
+  return res.json(summary);
+});
+
 
 function authenticateToken(req, res, next) {
   const authHeader = req.headers['authorization'];
