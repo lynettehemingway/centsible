@@ -5,10 +5,11 @@ export const fetchUserData = async () => {
     fetchName();
     fetchCategories();
     fetchSummary();
+    fetchBudgets();
 }
 
 export const clearUserData = async () => {
-    await AsyncStorage.multiRemove(['name', 'categories', 'summary']);
+    await AsyncStorage.multiRemove(['name', 'categories', 'summary', 'budgets']);
 }
 
 export const fetchName = async () => {
@@ -51,6 +52,31 @@ export const fetchCategories = async () => {
         return null;
     }
 }
+
+export const fetchBudgets = async () => {
+    try {
+        const response = await authFetch(
+                `${process.env.EXPO_PUBLIC_API_URL}/users/data/getbudgets`,
+                { method: 'GET', headers: { 'Content-Type': 'application/json' }, }
+              );
+        
+        const { budgets } = await response.json();
+
+        return await AsyncStorage.setItem('budgets', JSON.stringify(budgets));
+    }
+    catch (err){
+        return null;
+    }
+}
+
+export const getBudgets = async () => {
+    try {
+      const budgets = await AsyncStorage.getItem('budgets');
+      return budgets ? JSON.parse(budgets) : null;
+    } catch (err) {
+      return null;
+    }
+  };
 
 export const getCategories = async () => {
     try {

@@ -15,7 +15,7 @@ import {
   VictoryTheme
 } from 'victory';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useRouter } from 'expo-router';
+import { useRouter, useFocusEffect } from 'expo-router';
 import { FontAwesome } from '@expo/vector-icons';
 import { useUserAuth } from '@/hooks/useUserAuth';
 import { getName, getSummary, fetchUserData } from '@/utils/userDataStorage';
@@ -39,23 +39,29 @@ export default function Home() {
   const [name, setName] = useState<string>('');
   const [summary, setSummary] = useState<FormattedSummaryItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [mapExists, setMapExists] = useState(false);
 
-  useEffect(() => {
+  const currentMonth = new Date().getMonth();
+  const currentYear = new Date().getFullYear();
+
+  useFocusEffect(() => {
     (async () => {
       await fetchUserData();
       const name = await getName();
       if (name) setName(name);
 
       const result = await getSummary() as SummaryItem[];
+      if (result) {
+      setMapExists(true);
       const formatted = result.map(item => ({
         x: item.category,
         y: item.totalAmount,
       }));
-
       setSummary(formatted);
+      }
       setLoading(false);
     })();
-  }, []);
+  });
 
   const handleLogout = async () => {
     setLoading(true);
@@ -104,11 +110,12 @@ export default function Home() {
                 <Text style={styles.widgetTitle}>Expenses Summary</Text>
                 <FontAwesome name="bar-chart" size={20} color="#4a90e2" />
               </View>
-              <VictoryChart theme={VictoryTheme.material} domainPadding={25} height={200} padding={40}>
+              <Text style={styles.widgetTitle}>{currentMonth + 1}/{currentYear}</Text>
+              {(mapExists && <VictoryChart theme={VictoryTheme.material} domainPadding={25} height={200} padding={40}>
                 <VictoryAxis style={{tickLabels: { fontSize: 10 }}}/>
                 <VictoryAxis dependentAxis style={{tickLabels: { fontSize: 10 }}}/>
                 <VictoryBar data={summary}/>
-              </VictoryChart>
+              </VictoryChart>)}
             </TouchableOpacity>
 
             {/* Budget Overview Widget */}
